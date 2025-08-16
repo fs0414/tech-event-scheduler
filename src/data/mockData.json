@@ -1,0 +1,168 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "田中太郎",
+      "email": "tanaka@example.com",
+      "password": "$2a$10$xQj8PK8FQH8BqMHQfZVfBu7QF3UZ5MCmzfKmMk8k5h9lFmWvF1zYy",
+      "timestamp": "2024-01-15T09:00:00Z"
+    },
+    {
+      "id": 2,
+      "name": "鈴木花子",
+      "email": "suzuki@example.com",
+      "password": "$2a$10$YH8jqKpK7NHQfZVfBu7QF3UZ5MCmzfKmMk8k5h9lFmWvF1zXX",
+      "timestamp": "2024-01-16T10:30:00Z"
+    },
+    {
+      "id": 3,
+      "name": "佐藤健一",
+      "email": "sato@example.com",
+      "password": "$2a$10$ZZ8jqKpK7NHQfZVfBu7QF3UZ5MCmzfKmMk8k5h9lFmWvF1zZZ",
+      "timestamp": "2024-01-17T14:20:00Z"
+    },
+    {
+      "id": 4,
+      "name": "高橋美咲",
+      "email": "takahashi@example.com",
+      "password": "$2a$10$AA8jqKpK7NHQfZVfBu7QF3UZ5MCmzfKmMk8k5h9lFmWvF1zAA",
+      "timestamp": "2024-01-18T11:45:00Z"
+    },
+    {
+      "id": 5,
+      "name": "伊藤隆",
+      "email": "ito@example.com",
+      "password": "$2a$10$BB8jqKpK7NHQfZVfBu7QF3UZ5MCmzfKmMk8k5h9lFmWvF1zBB",
+      "timestamp": "2024-01-19T16:00:00Z"
+    }
+  ],
+  "events": [
+    {
+      "id": 1,
+      "title": "React Tokyo Conference 2024",
+      "event_url": "https://react-tokyo.com/2024"
+    },
+    {
+      "id": 2,
+      "title": "JSConf JP 2024",
+      "event_url": "https://jsconf.jp/2024"
+    },
+    {
+      "id": 3,
+      "title": "Vue Fes Japan 2024",
+      "event_url": "https://vuefes.jp/2024"
+    },
+    {
+      "id": 4,
+      "title": "TypeScript Meetup Tokyo #15",
+      "event_url": "https://typescript-meetup.jp/events/15"
+    },
+    {
+      "id": 5,
+      "title": "Frontend Conference Fukuoka 2024",
+      "event_url": "https://frontend-conf.fukuoka.jp/2024"
+    },
+    {
+      "id": 6,
+      "title": "Node.js Japan User Group Meetup",
+      "event_url": "https://nodejs.jp/meetup/2024-01"
+    },
+    {
+      "id": 7,
+      "title": "Web Performance Summit 2024",
+      "event_url": "https://webperf-summit.jp/2024"
+    },
+    {
+      "id": 8,
+      "title": "GraphQL Tokyo Conference",
+      "event_url": "https://graphql-tokyo.com/2024"
+    },
+    {
+      "id": 9,
+      "title": "Serverless Days Tokyo 2024",
+      "event_url": "https://serverlessdays.tokyo/2024"
+    },
+    {
+      "id": 10,
+      "title": "DevOps Days Tokyo 2024",
+      "event_url": "https://devopsdays.tokyo/2024"
+    }
+  ],
+  "owners": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "event_id": 1
+    },
+    {
+      "id": 2,
+      "user_id": 1,
+      "event_id": 3
+    },
+    {
+      "id": 3,
+      "user_id": 1,
+      "event_id": 5
+    },
+    {
+      "id": 4,
+      "user_id": 2,
+      "event_id": 2
+    },
+    {
+      "id": 5,
+      "user_id": 2,
+      "event_id": 4
+    },
+    {
+      "id": 6,
+      "user_id": 2,
+      "event_id": 7
+    },
+    {
+      "id": 7,
+      "user_id": 3,
+      "event_id": 1
+    },
+    {
+      "id": 8,
+      "user_id": 3,
+      "event_id": 6
+    },
+    {
+      "id": 9,
+      "user_id": 3,
+      "event_id": 8
+    },
+    {
+      "id": 10,
+      "user_id": 4,
+      "event_id": 3
+    },
+    {
+      "id": 11,
+      "user_id": 4,
+      "event_id": 9
+    },
+    {
+      "id": 12,
+      "user_id": 4,
+      "event_id": 10
+    },
+    {
+      "id": 13,
+      "user_id": 5,
+      "event_id": 2
+    },
+    {
+      "id": 14,
+      "user_id": 5,
+      "event_id": 5
+    },
+    {
+      "id": 15,
+      "user_id": 5,
+      "event_id": 10
+    }
+  ]
+}
