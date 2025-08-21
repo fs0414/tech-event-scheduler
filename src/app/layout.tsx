@@ -1,5 +1,4 @@
 import { Geist, Geist_Mono } from "next/font/google";
-import { Box, ColorModeScript, Container, Flex, VStack } from "@yamada-ui/react";
 import "./globals.css";
 import { Providers } from "./providers";
 import { Header } from "@/components/header";
@@ -21,21 +20,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja" suppressHydrationWarning>
-      <head>
-        <ColorModeScript type="cookie" nonce="testing" />
-      </head>
-      <body>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers>
-          <VStack minH="100vh" display="flex" flexDirection="column" top="md" p="24">
+          <div className="min-h-screen bg-gray-50 flex flex-col">
             <Header />
-            <Flex flex="1">
-              <Box as="main" flex="1" p="6">
-                <Container maxW="container.xl">
-                  {children}
-                </Container>
-              </Box>
-            </Flex>
-          </VStack>
+            <main className="flex-1">
+              <div className="container mx-auto px-4 py-6 max-w-7xl">
+                {children}
+              </div>
+            </main>
+          </div>
         </Providers>
       </body>
     </html>

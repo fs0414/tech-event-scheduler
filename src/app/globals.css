@@ -1,6 +1,5 @@
 /* Tailwind CSSを無効化してYamada UIのスタイルを優先 */
-/* @import "tailwindcss"; */
-/* @import "tw-animate-css"; */
+@import "tailwindcss";
 
 /* @custom-variant dark (&:is(.dark *)); */
 
