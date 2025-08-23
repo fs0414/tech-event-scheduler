@@ -12,7 +12,11 @@
 		"check": "biome check .",
 		"lint:fix": "biome format --write .",
 		"format:fix": "biome format --write .",
-		"check:fix": "biome check --write ."
+		"check:fix": "biome check --write .",
+		"db:seed": "prisma db seed"
+	},
+	"prisma": {
+		"seed": "tsx prisma/seed.ts"
 	},
 	"dependencies": {
 		"@prisma/client": "6.14.0",
@@ -38,6 +42,7 @@
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
 		"prisma": "^6.14.0",
+		"tsx": "^4.20.4",
 		"tw-animate-css": "^1.3.6",
 		"typescript": "^5"
 	}
