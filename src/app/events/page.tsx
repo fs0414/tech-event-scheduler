@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import mockData from '@/data/mockData.json';
 
 export default function Events() {
   const { events, users, owners } = mockData;
   const [searchTerm, setSearchTerm] = useState('');
+  const router = useRouter();
 
   const getEventOwners = (eventId: number) => {
     const ownerIds = owners
@@ -124,11 +126,11 @@ export default function Events() {
                 {/* Event Actions */}
                 <div className="mt-4 pt-4 border-t border-gray-200">
                   <div className="flex gap-2">
-                    <button className="flex-1 bg-gray-100 text-gray-700 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors">
+                    <button 
+                      onClick={() => router.push(`/events/${event.id}`)}
+                      className="flex-1 bg-gray-100 text-gray-700 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
+                    >
                       詳細
-                    </button>
-                    <button className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors">
-                      参加登録
                     </button>
                   </div>
                 </div>

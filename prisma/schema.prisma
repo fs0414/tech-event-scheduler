@@ -15,17 +15,90 @@ datasource db {
 }
 
 model User {
- id    Int     @id @default(autoincrement())
- email String  @unique
- name  String?
- posts Post[]
+  id          String   @id @default(uuid())
+  supabaseId  String   @unique @map("supabase_id")
+  email       String   @unique
+  name        String?
+  avatarUrl   String?  @map("avatar_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  // リレーション
+  ownerEvents Owner[]
+  speakers    Speaker[]
+  
+  @@map("users")
 }
 
-model Post {
- id        Int     @id @default(autoincrement())
- title     String
- content   String?
- published Boolean @default(false)
- author    User    @relation(fields: [authorId], references: [id])
- authorId  Int
+model Event {
+  id         Int      @id @default(autoincrement())
+  title      String
+  eventUrl   String?  @map("event_url")
+  attendance Int      @default(0)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  
+  // リレーション
+  owners     Owner[]
+  speakers   Speaker[]
+  timers     Timer[]
+  
+  @@map("events")
+}
+
+model Owner {
+  id      Int    @id @default(autoincrement())
+  userId  String @map("user_id")
+  eventId Int    @map("event_id")
+  role    String @default("participant")
+  
+  // リレーション
+  user    User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event   Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, eventId])
+  @@map("owners")
+}
+
+model Article {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  url         String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  // リレーション
+  speakers    Speaker[]
+  
+  @@map("articles")
+}
+
+model Speaker {
+  id        Int     @id @default(autoincrement())
+  userId    String  @map("user_id")
+  eventId   Int     @map("event_id")
+  articleId Int?    @map("article_id")
+  role      String? @default("speaker")
+  
+  // リレーション
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  article   Article? @relation(fields: [articleId], references: [id], onDelete: SetNull)
+  
+  @@unique([userId, eventId])
+  @@map("speakers")
+}
+
+model Timer {
+  id              Int @id @default(autoincrement())
+  durationMinutes Int @map("duration_minutes")
+  sequence        Int
+  eventId         Int @map("event_id")
+  
+  // リレーション
+  event           Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  @@unique([eventId, sequence])
+  @@map("timers")
 }
