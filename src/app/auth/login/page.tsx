@@ -73,4 +73,6 @@ function LoginPageContent() {
   )
 }
 
-export default function Page() {  return <LoginPageContent />
+export default function Page() {
+  return <LoginPageContent />
+}
