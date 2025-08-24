@@ -1,12 +1,51 @@
 'use client'
 
 import { createClient } from '@/lib/supabase/client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { UI_CONSTANTS, cn, createButtonClasses, createTypographyClasses, createCardClasses } from '@/lib/ui-constants'
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isProcessingCode, setIsProcessingCode] = useState(false)
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  
+  // OAuthコード処理
+  useEffect(() => {
+    const code = searchParams.get('code')
+    if (code && !isProcessingCode) {
+      setIsProcessingCode(true)
+      const supabase = createClient()
+      
+      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+        if (!error) {
+          router.push('/events')
+        } else {
+          console.error('OAuth error:', error)
+          setError('ログインに失敗しました。もう一度お試しください。')
+          // エラーの場合はcodeパラメータを削除
+          const url = new URL(window.location.href)
+          url.searchParams.delete('code')
+          window.history.replaceState({}, '', url.toString())
+          setIsProcessingCode(false)
+        }
+      })
+    }
+  }, [searchParams, router, isProcessingCode])
+  
+  // OAuthコード処理中の表示
+  if (isProcessingCode) {
+    return (
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00c4cc] mx-auto mb-4"></div>
+        <p className={cn(createTypographyClasses('m', 'regular', 'muted'))}>
+          ログイン処理中...
+        </p>
+      </div>
+    )
+  }
 
   const handleSocialLogin = async (e: React.FormEvent) => {
     e.preventDefault()
