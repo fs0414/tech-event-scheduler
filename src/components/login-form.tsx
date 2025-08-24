@@ -32,7 +32,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
           router.push('/events')
         } else {
           console.error('OAuth exchange failed:', error)
-          setError(ログインに失敗しました: ${error?.message || '不明なエラー'}`)
+          setError(`ログインに失敗しました: ${error?.message || '不明なエラー'}`)
           // エラーの場合はcodeパラメータを削除
           const url = new URL(window.location.href)
           url.searchParams.delete('code')
@@ -41,7 +41,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
         }
       }).catch((catchError) => {
         console.error('OAuth processing caught error:', catchError)
-        setError(ログイン処理中にエラーが発生しました: ${catchError.message}`)
+        setError(`ログイン処理中にエラーが発生しました: ${catchError.message}`)
         setIsProcessingCode(false)
         
         // URLからcodeを削除
