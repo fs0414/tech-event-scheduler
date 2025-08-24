@@ -15,36 +15,26 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
   // OAuthコード処理
   useEffect(() => {
     const code = searchParams.get('code')
-    console.log('OAuth code detected:', code)
     
     if (code && !isProcessingCode) {
-      console.log('Starting OAuth code processing...')
       setIsProcessingCode(true)
-      setError(null) // 既存エラーをクリア
+      setError(null)
       const supabase = createClient()
       
       supabase.auth.exchangeCodeForSession(code).then(({ data, error }) => {
-        console.log('OAuth exchange result:', { data, error })
-        
         if (!error && data.session) {
-          console.log('OAuth success, redirecting to /events')
-          // セッションが正常に作成された場合
           router.push('/events')
         } else {
-          console.error('OAuth exchange failed:', error)
           setError(`ログインに失敗しました: ${error?.message || '不明なエラー'}`)
-          // エラーの場合はcodeパラメータを削除
           const url = new URL(window.location.href)
           url.searchParams.delete('code')
           window.history.replaceState({}, '', url.toString())
           setIsProcessingCode(false)
         }
       }).catch((catchError) => {
-        console.error('OAuth processing caught error:', catchError)
         setError(`ログイン処理中にエラーが発生しました: ${catchError.message}`)
         setIsProcessingCode(false)
         
-        // URLからcodeを削除
         const url = new URL(window.location.href)
         url.searchParams.delete('code')
         window.history.replaceState({}, '', url.toString())
@@ -71,21 +61,15 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     setError(null)
 
     try {
-      console.log('Starting OAuth login with redirect to:', `${window.location.origin}/auth/login`)
-      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/login`,
+          redirectTo: `${window.location.origin}/auth/oauth?next=/events`,
         },
       })
 
-      if (error) {
-        console.error('OAuth initiation error:', error)
-        throw error
-      }
+      if (error) throw error
     } catch (error: unknown) {
-      console.error('Social login error:', error)
       setError(error instanceof Error ? error.message : 'An error occurred')
       setIsLoading(false)
     }

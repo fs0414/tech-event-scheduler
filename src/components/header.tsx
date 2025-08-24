@@ -18,7 +18,7 @@ export function Header({ isPublic = false }: HeaderProps) {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    router.push('/')
+    router.push('/auth/login')
   }
 
   return (
