@@ -2,6 +2,11 @@ import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { getCurrentUserWithAutoCreate } from '@/lib/auth-helpers';
 import EventCreateClient from '@/components/event-create-client';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+
+// This page uses cookies for authentication, so it must be dynamic
+export const dynamic = 'force-dynamic';
 
 export default async function EventCreatePage() {
   try {
@@ -20,9 +25,6 @@ export default async function EventCreatePage() {
     redirect('/auth/login');
   }
 }
-
-import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 function EventCreateLoadingSkeleton() {
   return (
