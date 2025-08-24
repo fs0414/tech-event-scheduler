@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/client'
 import { useState } from 'react'
+import { UI_CONSTANTS, cn, createButtonClasses, createTypographyClasses, createCardClasses } from '@/lib/ui-constants'
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
   const [error, setError] = useState<string | null>(null)
@@ -29,23 +30,44 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
   }
 
   return (
-    <div className={className} {...props}>
+    <div className={cn(className)} {...props}>
       <form onSubmit={handleSocialLogin}>
-        <div className="space-y-4">
+        <div className={cn(UI_CONSTANTS.spacing.gap, "flex flex-col")}>
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600 text-center">{error}</p>
+            <div className={cn(
+              createCardClasses('default'),
+              UI_CONSTANTS.spacing.sectionPadding,
+              "border-red-200 bg-red-50"
+            )}>
+              <p className={cn(
+                createTypographyClasses('s', 'regular', 'body'),
+                "text-center text-red-600"
+              )}>
+                {error}
+              </p>
             </div>
           )}
           
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white border-2 border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+            className={cn(
+              "w-full flex items-center justify-center",
+              UI_CONSTANTS.spacing.gap,
+              UI_CONSTANTS.buttons.large,
+              UI_CONSTANTS.colors.cardBg,
+              UI_CONSTANTS.colors.border,
+              UI_CONSTANTS.radius.button,
+              UI_CONSTANTS.transitions.default,
+              UI_CONSTANTS.states.focus,
+              createTypographyClasses('m', 'medium', 'body'),
+              "hover:bg-gray-50 hover:border-gray-400",
+              "disabled:opacity-50 disabled:cursor-not-allowed"
+            )}
           >
             {isLoading ? (
               <>
-                <svg className="animate-spin h-5 w-5 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg className={cn("animate-spin h-5 w-5", UI_CONSTANTS.colors.mutedText)} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
