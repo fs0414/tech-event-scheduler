@@ -17,7 +17,7 @@ export default async function EventCreatePage() {
     );
   } catch (error) {
     // 認証エラーの場合はログインページにリダイレクト
-    redirect('/auth/dev-login');
+    redirect('/auth/login');
   }
 }
 
