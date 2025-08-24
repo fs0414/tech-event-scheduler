@@ -11,7 +11,7 @@ interface HeaderProps {
 }
 
 export function Header({ isPublic = false }: HeaderProps) {
-  const { user } = useAuth()
+  const { supabaseUser, dbUser } = useAuth()
   const router = useRouter()
   const supabase = createClient()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -29,7 +29,7 @@ export function Header({ isPublic = false }: HeaderProps) {
             テクスケ
           </Link>
 
-          {user && (
+          {supabaseUser && (
             <div className="relative">
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -37,7 +37,7 @@ export function Header({ isPublic = false }: HeaderProps) {
               >
                 <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                   <span className="text-white text-sm font-semibold">
-                    {user.user_metadata.full_name?.[0] || user.email?.[0]?.toUpperCase()}
+                    {supabaseUser.user_metadata.full_name?.[0] || supabaseUser.email?.[0]?.toUpperCase()}
                   </span>
                 </div>
                 <svg className="w-4 h-4 text-gray-600" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">

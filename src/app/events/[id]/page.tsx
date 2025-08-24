@@ -1,7 +1,10 @@
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { prisma } from '@/lib/prisma';
+import { getCurrentUserForPage } from '@/lib/auth-helpers';
 import EventDetailClient from '@/components/event-detail-client';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 async function getEventData(id: number) {
   return await prisma.event.findUnique({
@@ -23,6 +26,7 @@ async function getEventData(id: number) {
   });
 }
 
+
 interface EventDetailPageProps {
   params: Promise<{ id: string }>;
 }
@@ -41,70 +45,82 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
     notFound();
   }
 
+  // 現在のユーザーを取得
+  const currentUser = await getCurrentUserForPage();
+
   return (
     <Suspense fallback={<EventDetailLoadingSkeleton />}>
-      <EventDetailClient event={event} />
+      <EventDetailClient event={event} currentUser={currentUser} />
     </Suspense>
   );
 }
 
 function EventDetailLoadingSkeleton() {
   return (
-    <div className="max-w-4xl mx-auto py-8">
+    <div className="container max-w-4xl py-8">
       {/* Header Skeleton */}
       <div className="mb-8">
-        <div className="h-9 bg-gray-200 rounded w-48 mb-4 animate-pulse"></div>
+        <Skeleton className="h-9 w-48 mb-4" />
         <div className="flex items-center gap-2">
-          <div className="h-4 bg-gray-200 rounded w-20 animate-pulse"></div>
-          <div className="h-4 bg-gray-200 rounded w-4 animate-pulse"></div>
-          <div className="h-4 bg-gray-200 rounded w-32 animate-pulse"></div>
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-32" />
         </div>
       </div>
 
       {/* Event Details Skeleton */}
-      <div className="bg-white rounded-lg shadow-md border border-gray-200 mb-8">
-        <div className="p-6">
-          <div className="mb-6">
-            <div className="h-8 bg-gray-200 rounded w-3/4 mb-4 animate-pulse"></div>
-            <div className="h-4 bg-gray-200 rounded w-48 animate-pulse"></div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <Card className="mb-8">
+        <CardHeader>
+          <Skeleton className="h-8 w-3/4 mb-4" />
+          <Skeleton className="h-4 w-48" />
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-gray-50 rounded-lg p-4">
-                <div className="h-8 bg-gray-200 rounded w-12 mb-2 animate-pulse"></div>
-                <div className="h-4 bg-gray-200 rounded w-16 animate-pulse"></div>
-              </div>
+              <Card key={i}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-10 w-10 rounded-lg" />
+                    <div>
+                      <Skeleton className="h-6 w-12 mb-1" />
+                      <Skeleton className="h-4 w-16" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Tabs Skeleton */}
-      <div className="bg-white rounded-lg shadow-md border border-gray-200">
-        <div className="border-b border-gray-200 px-6">
+      <Card>
+        <div className="border-b px-6">
           <div className="flex space-x-8">
             {[...Array(3)].map((_, i) => (
               <div key={i} className="py-4">
-                <div className="h-4 bg-gray-200 rounded w-24 animate-pulse"></div>
+                <Skeleton className="h-4 w-24" />
               </div>
             ))}
           </div>
         </div>
-        <div className="p-6">
+        <CardContent className="pt-6">
           <div className="flex items-center justify-between mb-6">
-            <div className="h-6 bg-gray-200 rounded w-32 animate-pulse"></div>
-            <div className="h-10 bg-gray-200 rounded w-32 animate-pulse"></div>
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-10 w-32" />
           </div>
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="border border-gray-200 rounded-lg p-4">
-                <div className="h-4 bg-gray-200 rounded w-1/2 mb-2 animate-pulse"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/4 animate-pulse"></div>
-              </div>
+              <Card key={i}>
+                <CardContent className="p-4">
+                  <Skeleton className="h-4 w-1/2 mb-2" />
+                  <Skeleton className="h-4 w-1/4" />
+                </CardContent>
+              </Card>
             ))}
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

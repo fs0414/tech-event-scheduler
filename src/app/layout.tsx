@@ -22,7 +22,7 @@ export default function RootLayout({
     <html lang="ja" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers>
-          <div className="min-h-screen bg-gray-50 flex flex-col">
+          <div className="min-h-screen bg-white flex flex-col">
             <Header />
             <main className="flex-1">
               <div className="container mx-auto px-4 py-6 max-w-7xl">

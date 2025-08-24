@@ -1,10 +1,11 @@
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
-import { createClient } from '@/lib/supabase/server';
+import { getCurrentUserWithAutoCreate } from '@/lib/auth-helpers';
 import EventsClient from '@/components/events-client';
+import type { EventForList } from '@/types/events';
 
-async function getEventsData(userId: string, search?: string) {
+async function getEventsData(userId: string, search?: string): Promise<EventForList[]> {
   return await prisma.event.findMany({
     where: {
       AND: [
@@ -26,9 +27,16 @@ async function getEventsData(userId: string, search?: string) {
     include: {
       owners: {
         include: { 
-          user: true 
+          user: true
         }
-      }
+      },
+      speakers: {
+        include: {
+          user: true,
+          article: true
+        }
+      },
+      timers: true
     },
     orderBy: {
       createdAt: 'desc'
@@ -43,40 +51,22 @@ interface EventsPageProps {
 export default async function EventsPage({ searchParams }: EventsPageProps) {
   const { search } = await searchParams;
   
-  // Supabaseから認証ユーザー取得
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) {
+  try {
+    // 認証ユーザー取得（自動作成付き）
+    const dbUser = await getCurrentUserWithAutoCreate();
+    
+    // ユーザーが所有するイベントを取得
+    const events = await getEventsData(dbUser.id, search);
+
+    return (
+      <Suspense fallback={<EventsLoadingSkeleton />}>
+        <EventsClient events={events} initialSearch={search} />
+      </Suspense>
+    );
+  } catch (error) {
+    // 認証エラーの場合はログインページにリダイレクト
     redirect('/auth/login');
   }
-  
-  // SupabaseユーザーIDから内部ユーザー取得
-  let dbUser = await prisma.user.findUnique({
-    where: { supabaseId: user.id }
-  });
-  
-  if (!dbUser) {
-    // ユーザーが存在しない場合は初回ログインとして作成
-    dbUser = await prisma.user.create({
-      data: {
-        id: `user-${Date.now()}`,
-        supabaseId: user.id,
-        email: user.email || '',
-        name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User',
-        avatarUrl: user.user_metadata?.avatar_url || null
-      }
-    });
-  }
-  
-  // ユーザーが所有するイベントを取得
-  const events = await getEventsData(dbUser.id, search);
-
-  return (
-    <Suspense fallback={<EventsLoadingSkeleton />}>
-      <EventsClient events={events} initialSearch={search} />
-    </Suspense>
-  );
 }
 
 function EventsLoadingSkeleton() {
