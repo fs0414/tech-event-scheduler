@@ -1,58 +1,12 @@
 'use client'
 
 import { createClient } from '@/lib/supabase/client'
-import { useState, useEffect } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { UI_CONSTANTS, cn, createButtonClasses, createTypographyClasses, createCardClasses } from '@/lib/ui-constants'
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [isProcessingCode, setIsProcessingCode] = useState(false)
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  
-  // OAuthコード処理
-  useEffect(() => {
-    const code = searchParams.get('code')
-    
-    if (code && !isProcessingCode) {
-      setIsProcessingCode(true)
-      setError(null)
-      const supabase = createClient()
-      
-      supabase.auth.exchangeCodeForSession(code).then(({ data, error }) => {
-        if (!error && data.session) {
-          router.push('/events')
-        } else {
-          setError(`ログインに失敗しました: ${error?.message || '不明なエラー'}`)
-          const url = new URL(window.location.href)
-          url.searchParams.delete('code')
-          window.history.replaceState({}, '', url.toString())
-          setIsProcessingCode(false)
-        }
-      }).catch((catchError) => {
-        setError(`ログイン処理中にエラーが発生しました: ${catchError.message}`)
-        setIsProcessingCode(false)
-        
-        const url = new URL(window.location.href)
-        url.searchParams.delete('code')
-        window.history.replaceState({}, '', url.toString())
-      })
-    }
-  }, [searchParams, router, isProcessingCode])
-  
-  // OAuthコード処理中の表示
-  if (isProcessingCode) {
-    return (
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00c4cc] mx-auto mb-4"></div>
-        <p className={cn(createTypographyClasses('m', 'regular', 'muted'))}>
-          ログイン処理中...
-        </p>
-      </div>
-    )
-  }
 
   const handleSocialLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -61,10 +15,27 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
     setError(null)
 
     try {
+      // 本番環境のURLを明示的に設定
+      const getRedirectUrl = () => {
+        // Vercel環境変数を使用して正しいURLを取得
+        const vercelUrl = process.env.NEXT_PUBLIC_VERCEL_URL
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+        
+        // 優先順位: SITE_URL > VERCEL_URL > window.location.origin
+        if (siteUrl) {
+          return `${siteUrl}/auth/oauth?next=/events`
+        } else if (vercelUrl) {
+          return `https://${vercelUrl}/auth/oauth?next=/events`
+        } else {
+          // フォールバック：現在のオリジンを使用
+          return `${window.location.origin}/auth/oauth?next=/events`
+        }
+      }
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/oauth?next=/events`,
+          redirectTo: getRedirectUrl(),
         },
       })
 
