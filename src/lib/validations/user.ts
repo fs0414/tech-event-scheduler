@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { OWNER_ROLES } from '@/lib/owner-role';
 
 // 共通のバリデーションルール
 const emailSchema = z
@@ -23,14 +24,18 @@ export const searchUserSchema = z.object({
 export const addOwnerSchema = z.object({
   eventId: z.number().int().positive(),
   userEmail: emailSchema,
-  role: z.enum(['organizer', 'member']).default('member')
+  role: z.number().int().refine(val => val === OWNER_ROLES.ADMIN || val === OWNER_ROLES.MEMBER, {
+    message: '無効なロールです'
+  }).default(OWNER_ROLES.MEMBER)
 });
 
 // オーナーロール変更用スキーマ
 export const changeOwnerRoleSchema = z.object({
   ownerId: z.number().int().positive(),
   eventId: z.number().int().positive(),
-  newRole: z.enum(['organizer', 'member'])
+  newRole: z.number().int().refine(val => val === OWNER_ROLES.ADMIN || val === OWNER_ROLES.MEMBER, {
+    message: '無効なロールです'
+  })
 });
 
 // オーナー削除用スキーマ

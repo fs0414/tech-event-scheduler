@@ -12,6 +12,7 @@ import AddOrganizerForm from '@/components/add-organizer-form';
 import EventTimerManager from '@/components/event-timer-manager';
 import EventTimerRunner from '@/components/event-timer-runner';
 import { changeUserRole } from '@/app/events/_actions/owner.actions';
+import { OWNER_ROLES, OWNER_ROLE_LABELS } from '@/lib/owner-role';
 import type { Event, User, Owner, Speaker, Article, Timer } from '@prisma/client';
 
 type EventWithDetails = Event & {
@@ -34,9 +35,9 @@ export default function EventDetailTabs({ event, currentUser, isOwner }: EventDe
   const eventSpeakers = event.speakers;
   const eventTimers = event.timers.sort((a, b) => a.sequence - b.sequence);
 
-  const handleRoleChange = async (ownerId: number, newRole: string) => {
+  const handleRoleChange = async (ownerId: number, newRole: number) => {
     try {
-      await changeUserRole(ownerId, event.id, newRole);
+      await changeUserRole(ownerId, event.id, isOwner, newRole);
     } catch (error: any) {
       console.error('ロール変更エラー:', error);
     }
@@ -121,6 +122,7 @@ export default function EventDetailTabs({ event, currentUser, isOwner }: EventDe
               <div className="mb-6 p-4 border rounded-lg bg-muted/30">
                 <AddOrganizerForm
                   eventId={event.id}
+                  isOwner={isOwner}
                   onSuccess={handleAddOrganizerSuccess}
                   onCancel={() => setShowAddOrganizerForm(false)}
                 />
@@ -144,17 +146,17 @@ export default function EventDetailTabs({ event, currentUser, isOwner }: EventDe
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant={ownerRecord?.role === 'organizer' ? 'default' : 'secondary'}>
-                        {ownerRecord?.role === 'organizer' ? '主催者' : 'メンバー'}
+                      <Badge variant={ownerRecord?.role === OWNER_ROLES.ADMIN ? 'default' : 'secondary'}>
+                        {OWNER_ROLE_LABELS[ownerRecord?.role as keyof typeof OWNER_ROLE_LABELS] || 'メンバー'}
                       </Badge>
                       {isOwner && ownerRecord && (
                         <select
                           value={ownerRecord.role}
-                          onChange={(e) => handleRoleChange(ownerRecord.id, e.target.value)}
+                          onChange={(e) => handleRoleChange(ownerRecord.id, parseInt(e.target.value))}
                           className="text-xs px-2 py-1 border rounded"
                         >
-                          <option value="organizer">主催者</option>
-                          <option value="member">メンバー</option>
+                          <option value={OWNER_ROLES.ADMIN}>管理者</option>
+                          <option value={OWNER_ROLES.MEMBER}>メンバー</option>
                         </select>
                       )}
                     </div>
@@ -210,7 +212,7 @@ export default function EventDetailTabs({ event, currentUser, isOwner }: EventDe
 
         <TabsContent value="timers" className="space-y-4">
           <EventTimerRunner timers={eventTimers} currentUser={currentUser} />
-          <EventTimerManager event={event} currentUser={currentUser} />
+          <EventTimerManager event={event} currentUser={currentUser} isOwner={isOwner} />
         </TabsContent>
       </Tabs>
     </div>

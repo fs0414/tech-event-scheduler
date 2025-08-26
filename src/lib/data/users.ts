@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { cache } from 'react';
+import { OWNER_ROLES } from '@/lib/owner-role';
 
 // ユーザーをメールアドレスで検索
 export const findUserByEmail = cache(async (email: string) => {
@@ -97,9 +98,9 @@ export const getEventOwners = cache(async (eventId: number) => {
       }
     })
     .then(results => results.sort((a, b) => {
-      // organizer が先に来る
-      if (a.role === 'organizer' && b.role !== 'organizer') return -1;
-      if (b.role === 'organizer' && a.role !== 'organizer') return 1;
+      // ADMIN が先に来る
+      if (a.role === OWNER_ROLES.ADMIN && b.role !== OWNER_ROLES.ADMIN) return -1;
+      if (b.role === OWNER_ROLES.ADMIN && a.role !== OWNER_ROLES.ADMIN) return 1;
       return a.id - b.id;
     }));
   

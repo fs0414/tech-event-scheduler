@@ -1,16 +1,19 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { requireAuthentication, requireOwnerPermission } from '@/lib/auth-helpers';
+import { requireAuthentication } from '@/lib/auth-helpers';
 import { revalidatePath } from 'next/cache';
+import { OWNER_ROLES } from '@/lib/owner-role';
 
-export async function addOwner(eventId: number, userEmail: string) {
+export async function addOwner(eventId: number, isOwner: boolean, userEmail: string) {
   try {
+    // 権限チェック（Props経由）
+    if (!isOwner) {
+      throw new Error('このイベントの管理権限がありません');
+    }
+    
     // 認証確認とユーザー情報取得
     const { dbUser } = await requireAuthentication();
-    
-    // オーナー権限確認
-    await requireOwnerPermission(dbUser.id, eventId);
 
     const sanitizedEmail = userEmail.toLowerCase().trim();
     
@@ -45,7 +48,7 @@ export async function addOwner(eventId: number, userEmail: string) {
       data: {
         eventId: eventId,
         userId: targetUser.id,
-        role: 'participant'
+        role: OWNER_ROLES.MEMBER
       }
     });
 
@@ -60,13 +63,15 @@ export async function addOwner(eventId: number, userEmail: string) {
   }
 }
 
-export async function removeOwner(eventId: number, userId: string) {
+export async function removeOwner(eventId: number, isOwner: boolean, userId: string) {
   try {
+    // 権限チェック（Props経由）
+    if (!isOwner) {
+      throw new Error('このイベントの管理権限がありません');
+    }
+    
     // 認証確認とユーザー情報取得
     const { dbUser } = await requireAuthentication();
-    
-    // オーナー権限確認
-    await requireOwnerPermission(dbUser.id, eventId);
 
     // 自分自身は削除できない
     if (userId === dbUser.id) {

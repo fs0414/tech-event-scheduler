@@ -5,12 +5,18 @@ import { prisma } from '@/lib/prisma';
 import { generateUserTimestampId } from '@/lib/temporal';
 import { cache } from 'react';
 import type { User } from '@prisma/client';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 import type { AuthenticatedUser } from '@/types/auth';
 
-export async function getCurrentAuthenticatedUser(): Promise<AuthenticatedUser | null> {
+export const getCachedSupabaseUser = cache(async (): Promise<SupabaseUser | null> => {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
+});
+
+export const getCachedAuthenticatedUser = cache(async (): Promise<AuthenticatedUser | null> => {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getCachedSupabaseUser();
     
     if (!user) {
       return null;
@@ -32,10 +38,13 @@ export async function getCurrentAuthenticatedUser(): Promise<AuthenticatedUser |
     console.error('認証ユーザー取得エラー:', error);
     return null;
   }
-}
+});
+
+// 互換性のために既存の関数名をエイリアスとして残す
+export const getCurrentAuthenticatedUser = getCachedAuthenticatedUser;
 
 export async function requireAuthentication(): Promise<AuthenticatedUser> {
-  const authUser = await getCurrentAuthenticatedUser();
+  const authUser = await getCachedAuthenticatedUser();
   
   if (!authUser) {
     throw new Error('認証が必要です');
@@ -68,20 +77,21 @@ export async function requireOwnerPermission(userId: string, eventId: number): P
   }
 }
 
-export const getCurrentUserForPage = cache(async (): Promise<User | null> => {
+// getCurrentUserForPageは既にgetCachedAuthenticatedUserを通してキャッシュされるので、
+// 追加のcacheは不要
+export async function getCurrentUserForPage(): Promise<User | null> {
   try {
-    const authUser = await getCurrentAuthenticatedUser();
+    const authUser = await getCachedAuthenticatedUser();
     return authUser?.dbUser || null;
   } catch (error) {
     console.error('ページ用ユーザー取得エラー:', error);
     return null;
   }
-});
+}
 
 export async function getCurrentUserWithAutoCreate(retryCount: number = 0): Promise<User> {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getCachedSupabaseUser();
     
     if (!user) {
       // OAuth直後でセッションがまだ確立されていない可能性がある場合はリトライ

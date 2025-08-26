@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { requireAuthentication } from '@/lib/auth-helpers';
+import { OWNER_ROLES } from '@/lib/owner-role';
 import { 
   createEventFormSchema, 
   updateAttendanceSchema,
@@ -76,7 +77,7 @@ export async function createEvent(formData: FormData) {
         const ownerData = ownerIds.map(ownerId => ({
           userId: ownerId,
           eventId: event.id,
-          role: ownerId === currentUser.id ? 'organizer' : 'participant'
+          role: ownerId === currentUser.id ? OWNER_ROLES.ADMIN : OWNER_ROLES.MEMBER
         }));
 
         await tx.owner.createMany({

@@ -137,105 +137,105 @@ async function main() {
       data: {
         userId: 'user-1',
         eventId: 1,
-        role: 'participant',
+        role: 20,
       },
     }),
     prisma.owner.create({
       data: {
         userId: 'user-1',
         eventId: 3,
-        role: 'organizer',
+        role: 10,
       },
     }),
     prisma.owner.create({
       data: {
         userId: 'user-1',
         eventId: 5,
-        role: 'participant',
+        role: 20,
       },
     }),
     prisma.owner.create({
       data: {
         userId: 'user-2',
         eventId: 2,
-        role: 'participant',
+        role: 20,
       },
     }),
     prisma.owner.create({
       data: {
         userId: 'user-2',
         eventId: 4,
-        role: 'organizer',
+        role: 20,
       },
     }),
     prisma.owner.create({
       data: {
         userId: 'user-2',
         eventId: 7,
-        role: 'participant',
+        role: 20,
       },
     }),
     prisma.owner.create({
       data: {
         userId: 'user-3',
         eventId: 1,
-        role: 'participant',
+        role: 20,
       },
     }),
     prisma.owner.create({
       data: {
         userId: 'user-3',
         eventId: 6,
-        role: 'organizer',
+        role: 20,
       },
     }),
     prisma.owner.create({
       data: {
         userId: 'user-3',
         eventId: 8,
-        role: 'participant',
+        role: 20,
       },
     }),
     prisma.owner.create({
       data: {
         userId: 'user-4',
         eventId: 3,
-        role: 'participant',
+        role: 20,
       },
     }),
     prisma.owner.create({
       data: {
         userId: 'user-4',
         eventId: 9,
-        role: 'organizer',
+        role: 20,
       },
     }),
     prisma.owner.create({
       data: {
         userId: 'user-4',
         eventId: 10,
-        role: 'participant',
+        role: 20,
       },
     }),
     prisma.owner.create({
       data: {
         userId: 'user-5',
         eventId: 2,
-        role: 'participant',
+        role: 20,
       },
     }),
     prisma.owner.create({
       data: {
         userId: 'user-5',
         eventId: 5,
-        role: 'organizer',
+        role: 20,
       },
     }),
     prisma.owner.create({
       data: {
         userId: 'user-5',
         eventId: 10,
-        role: 'participant',
+        role: 20,
       },
     }),
   ])

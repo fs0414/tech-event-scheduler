@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { requireAuthentication } from '@/lib/auth-helpers';
 import { revalidatePath } from 'next/cache';
+import { OWNER_ROLES } from '@/lib/owner-role';
 
 // ユーザー検索のServer Action
 export async function searchUserByEmail(email: string, excludeUserId?: string) {
@@ -112,7 +113,7 @@ export async function createEvent(formData: FormData) {
         const ownerData = ownerIds.map(ownerId => ({
           userId: ownerId,
           eventId: event.id,
-          role: ownerId === currentUser.id ? 'organizer' : 'participant'
+          role: ownerId === currentUser.id ? OWNER_ROLES.ADMIN : OWNER_ROLES.MEMBER
         }));
 
         await tx.owner.createMany({

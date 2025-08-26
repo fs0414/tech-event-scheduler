@@ -20,17 +20,16 @@ interface EventTimerManagerProps {
     }>;
   };
   currentUser?: { id: string; email: string; name: string | null } | null;
+  isOwner: boolean;
 }
 
-export default function EventTimerManager({ event, currentUser }: EventTimerManagerProps) {
+export default function EventTimerManager({ event, currentUser, isOwner }: EventTimerManagerProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [newSessionDuration, setNewSessionDuration] = useState<number>(15);
   const [editingTimer, setEditingTimer] = useState<number | null>(null);
   const [editDuration, setEditDuration] = useState<number>(0);
 
-  // 現在のユーザーがオーナーかチェック
-  const isOwner = currentUser && event.owners.some(owner => owner.userId === currentUser.id);
 
   // タイマーをsequence順にソート
   const sortedTimers = [...event.timers].sort((a, b) => a.sequence - b.sequence);
@@ -44,7 +43,7 @@ export default function EventTimerManager({ event, currentUser }: EventTimerMana
     startTransition(async () => {
       try {
         setError(null);
-        await addTimerSession(event.id, newSessionDuration);
+        await addTimerSession(event.id, isOwner, newSessionDuration);
         setNewSessionDuration(15); // デフォルトに戻す
       } catch (err) {
         setError(err instanceof Error ? err.message : 'セッションの追加に失敗しました');
@@ -61,7 +60,7 @@ export default function EventTimerManager({ event, currentUser }: EventTimerMana
     startTransition(async () => {
       try {
         setError(null);
-        await updateTimerSession(timerId, editDuration);
+        await updateTimerSession(timerId, isOwner, editDuration);
         setEditingTimer(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'セッションの更新に失敗しました');
@@ -77,7 +76,7 @@ export default function EventTimerManager({ event, currentUser }: EventTimerMana
     startTransition(async () => {
       try {
         setError(null);
-        await deleteTimerSession(timerId);
+        await deleteTimerSession(timerId, isOwner);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'セッションの削除に失敗しました');
       }

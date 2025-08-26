@@ -49,7 +49,7 @@ model Owner {
   id        Int      @id @default(autoincrement())
   userId    String   @map("user_id")
   eventId   Int      @map("event_id")
-  role      String   @default("participant")
+  role      Int      @default(10) // 10=管理者, 20=メンバー
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(0)
 

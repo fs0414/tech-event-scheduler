@@ -1,22 +1,24 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { requireAuthentication, requireOwnerPermission } from '@/lib/auth-helpers';
+import { requireAuthentication } from '@/lib/auth-helpers';
 import { revalidatePath } from 'next/cache';
 
-export async function updateAttendance(eventId: number, newAttendance: number) {
+export async function updateAttendance(eventId: number, isOwner: boolean, newAttendance: number) {
   try {
-    // 認証確認とユーザー情報取得
-    const { dbUser } = await requireAuthentication();
+    // 権限チェック（Props経由）
+    if (!isOwner) {
+      throw new Error('このイベントの管理権限がありません');
+    }
     
-    // オーナー権限確認
-    await requireOwnerPermission(dbUser.id, eventId);
+    // 認証確認とユーザー情報取得（なりすまし防止のため維持）
+    const { dbUser } = await requireAuthentication();
 
     if (!Number.isInteger(newAttendance) || newAttendance < 0 || newAttendance > 10000) {
       throw new Error('出席者数は0以上10000以下の整数である必要があります');
     }
 
-    // 出席者数を更新（排他制御付き）
+    // 出席者数を更新（連打による競合回避の排他制御）
     const updatedEvent = await prisma.$transaction(async (tx) => {
       // 現在の値を取得して楽観的ロック
       const currentEvent = await tx.event.findUnique({

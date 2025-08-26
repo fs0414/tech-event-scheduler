@@ -12,11 +12,12 @@ import { UI_CONSTANTS, cn, createButtonClasses, createCardClasses, createTypogra
 
 interface AddOrganizerFormProps {
   eventId: number;
+  isOwner: boolean;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
-export default function AddOrganizerForm({ eventId, onSuccess, onCancel }: AddOrganizerFormProps) {
+export default function AddOrganizerForm({ eventId, isOwner, onSuccess, onCancel }: AddOrganizerFormProps) {
   const [email, setEmail] = useState('');
   const [searchResult, setSearchResult] = useState<{ id: string; name: string | null; email: string } | null>(null);
   const [isSearching, startSearchTransition] = useTransition();
@@ -57,7 +58,7 @@ export default function AddOrganizerForm({ eventId, onSuccess, onCancel }: AddOr
     startAddTransition(async () => {
       try {
         setError(null);
-        await addOrganizer(eventId, searchResult.email);
+        await addOrganizer(eventId, isOwner, searchResult.email);
         setEmail('');
         setSearchResult(null);
         onSuccess?.();

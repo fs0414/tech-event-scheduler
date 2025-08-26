@@ -1,8 +1,9 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { requireAuthentication, requireOwnerPermission } from '@/lib/auth-helpers';
+import { requireAuthentication } from '@/lib/auth-helpers';
 import { revalidatePath } from 'next/cache';
+import { OWNER_ROLES } from '@/lib/owner-role';
 
 export async function searchUserByEmail(email: string) {
   try {
@@ -36,11 +37,15 @@ export async function searchUserByEmail(email: string) {
   }
 }
 
-export async function addOrganizer(eventId: number, userEmail: string) {
+export async function addOrganizer(eventId: number, isOwner: boolean, userEmail: string) {
   try {
-    const { dbUser } = await requireAuthentication();
+    // 権限チェック（Props経由）
+    if (!isOwner) {
+      throw new Error('このイベントの管理権限がありません');
+    }
     
-    await requireOwnerPermission(dbUser.id, eventId);
+    // 認証確認とユーザー情報取得（なりすまし防止のため維持）
+    const { dbUser } = await requireAuthentication();
 
     const sanitizedEmail = userEmail.toLowerCase().trim();
     
@@ -75,7 +80,7 @@ export async function addOrganizer(eventId: number, userEmail: string) {
       data: {
         userId: targetUser.id,
         eventId: eventId,
-        role: 'organizer'
+        role: OWNER_ROLES.ADMIN
       }
     });
 
@@ -89,13 +94,17 @@ export async function addOrganizer(eventId: number, userEmail: string) {
   }
 }
 
-export async function changeUserRole(ownerId: number, eventId: number, newRole: string) {
+export async function changeUserRole(ownerId: number, eventId: number, isOwner: boolean, newRole: number) {
   try {
-    const { dbUser } = await requireAuthentication();
+    // 権限チェック（Props経由）
+    if (!isOwner) {
+      throw new Error('このイベントの管理権限がありません');
+    }
     
-    await requireOwnerPermission(dbUser.id, eventId);
+    // 認証確認とユーザー情報取得（なりすまし防止のため維持）
+    const { dbUser } = await requireAuthentication();
 
-    if (!['organizer', 'participant'].includes(newRole)) {
+    if (newRole !== OWNER_ROLES.ADMIN && newRole !== OWNER_ROLES.MEMBER) {
       throw new Error('無効なロールです');
     }
 

@@ -2,6 +2,7 @@
 
 import type { EventWithDetails } from '@/types/events';
 import { UI_CONSTANTS, cn } from '@/lib/ui-constants';
+import { OWNER_ROLES } from '@/lib/owner-role';
 import EventDetailHeader from '@/components/event-detail-header';
 import EventDetailTabs from '@/components/event-detail-tabs';
 
@@ -14,7 +15,7 @@ interface EventDetailClientProps {
 export default function EventDetailClient({ event, currentUser, isOwner: propIsOwner }: EventDetailClientProps) {
   // isOwnerプロパティが渡されたらそれを使用、なければ従来のロジック
   const isOwner = propIsOwner ?? (currentUser && event.owners.some(owner => 
-    owner.userId === currentUser.id && owner.role === 'organizer'
+    owner.userId === currentUser.id && owner.role === OWNER_ROLES.ADMIN
   ));
 
   return (

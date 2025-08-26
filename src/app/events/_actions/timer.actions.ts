@@ -5,21 +5,15 @@ import { prisma } from '@/lib/prisma';
 import { requireAuthentication } from '@/lib/auth-helpers';
 
 // タイマーセッションを追加
-export async function addTimerSession(eventId: number, durationMinutes: number) {
+export async function addTimerSession(eventId: number, isOwner: boolean, durationMinutes: number) {
   try {
-    const { dbUser: currentUser } = await requireAuthentication();
-
-    // 現在のユーザーがイベントのオーナーかチェック
-    const isOwner = await prisma.owner.findFirst({
-      where: {
-        eventId,
-        userId: currentUser.id
-      }
-    });
-
+    // 権限チェック（Props経由）
     if (!isOwner) {
       throw new Error('このイベントのタイマーを編集する権限がありません');
     }
+    
+    // 認証確認（なりすまし防止のため維持）
+    const { dbUser: currentUser } = await requireAuthentication();
 
     // 次のsequence番号を取得
     const lastTimer = await prisma.timer.findFirst({
@@ -47,24 +41,24 @@ export async function addTimerSession(eventId: number, durationMinutes: number) 
 }
 
 // タイマーセッションを更新
-export async function updateTimerSession(timerId: number, durationMinutes: number) {
+export async function updateTimerSession(timerId: number, isOwner: boolean, durationMinutes: number) {
   try {
+    // 権限チェック（Props経由）
+    if (!isOwner) {
+      throw new Error('このタイマーを編集する権限がありません');
+    }
+    
+    // 認証確認（なりすまし防止のため維持）
     const { dbUser: currentUser } = await requireAuthentication();
 
     // タイマーとイベント情報を取得
     const timer = await prisma.timer.findUnique({
       where: { id: timerId },
-      include: { event: { include: { owners: true } } }
+      include: { event: true }
     });
 
     if (!timer) {
       throw new Error('タイマーが見つかりません');
-    }
-
-    // 現在のユーザーがイベントのオーナーかチェック
-    const isOwner = timer.event.owners.some(owner => owner.userId === currentUser.id);
-    if (!isOwner) {
-      throw new Error('このタイマーを編集する権限がありません');
     }
 
     // タイマーを更新
@@ -82,24 +76,24 @@ export async function updateTimerSession(timerId: number, durationMinutes: numbe
 }
 
 // タイマーセッションを削除
-export async function deleteTimerSession(timerId: number) {
+export async function deleteTimerSession(timerId: number, isOwner: boolean) {
   try {
+    // 権限チェック（Props経由）
+    if (!isOwner) {
+      throw new Error('このタイマーを削除する権限がありません');
+    }
+    
+    // 認証確認（なりすまし防止のため維持）
     const { dbUser: currentUser } = await requireAuthentication();
 
     // タイマーとイベント情報を取得
     const timer = await prisma.timer.findUnique({
       where: { id: timerId },
-      include: { event: { include: { owners: true } } }
+      include: { event: true }
     });
 
     if (!timer) {
       throw new Error('タイマーが見つかりません');
-    }
-
-    // 現在のユーザーがイベントのオーナーかチェック
-    const isOwner = timer.event.owners.some(owner => owner.userId === currentUser.id);
-    if (!isOwner) {
-      throw new Error('このタイマーを削除する権限がありません');
     }
 
     const eventId = timer.eventId;
