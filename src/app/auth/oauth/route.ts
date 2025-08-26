@@ -18,6 +18,9 @@ export async function GET(request: Request) {
     next = '/events'
   }
   
+  // OAuth成功後の初回ログイン判定用パラメータを追加
+  next = next.includes('?') ? `${next}&oauth_callback=true` : `${next}?oauth_callback=true`
+  
 
   if (code) {
     const supabase = await createClient()

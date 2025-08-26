@@ -36,6 +36,8 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
       </div>
     );
   } catch (error) {
+    console.error('Events page error:', error);
+    // getCurrentUserWithAutoCreate内でリトライロジックが実装されたため、
     // 認証エラーの場合はログインページにリダイレクト
     redirect('/auth/login');
   }

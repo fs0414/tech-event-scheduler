@@ -78,12 +78,18 @@ export const getCurrentUserForPage = cache(async (): Promise<User | null> => {
   }
 });
 
-export async function getCurrentUserWithAutoCreate(): Promise<User> {
+export async function getCurrentUserWithAutoCreate(retryCount: number = 0): Promise<User> {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
+      // OAuth直後でセッションがまだ確立されていない可能性がある場合はリトライ
+      if (retryCount < 2) {
+        console.log(`認証セッション確立待ちでリトライ中... (${retryCount + 1}/3)`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return getCurrentUserWithAutoCreate(retryCount + 1);
+      }
       throw new Error('認証が必要です');
     }
 
