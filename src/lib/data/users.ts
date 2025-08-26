@@ -182,7 +182,6 @@ export const getUserEventHistory = cache(async (userId: string, limit: number = 
   return history;
 });
 
-// キャッシュ無効化ヘルパー（React cacheでは直接的な無効化は不要だが、互換性のため残す）
 export function invalidateUserCache(userId?: string, email?: string) {
   const tags = ['users', 'search:users'];
   
@@ -194,6 +193,5 @@ export function invalidateUserCache(userId?: string, email?: string) {
     tags.push(`user:email:${email.toLowerCase()}`);
   }
   
-  // React cacheは自動でリクエスト間でキャッシュされるため、手動無効化は不要
   return tags;
 }

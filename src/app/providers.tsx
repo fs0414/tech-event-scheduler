@@ -32,21 +32,69 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
-  // DBユーザー情報を取得する関数
-  const fetchDbUser = async (supabaseUserId: string) => {
+  // キャッシュとフラグ
+  const [dbUserCache, setDbUserCache] = useState<Map<string, { user: PrismaUser | null; timestamp: number }>>(new Map())
+  const [fetchingUsers, setFetchingUsers] = useState<Set<string>>(new Set())
+  const CACHE_TTL = 5 * 60 * 1000 // 5分
+
+  // DBユーザー情報を取得する関数（キャッシュ・重複防止機能付き）
+  const fetchDbUser = async (supabaseUserId: string): Promise<PrismaUser | null> => {
+    // キャッシュチェック
+    const cached = dbUserCache.get(supabaseUserId);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      console.log('🎯 Cache hit for user:', supabaseUserId);
+      return cached.user;
+    }
+
+    // 重複実行チェック
+    if (fetchingUsers.has(supabaseUserId)) {
+      console.log('⏱️ Duplicate request prevented for user:', supabaseUserId);
+      // 既存のリクエストが完了するまで待機
+      return new Promise((resolve) => {
+        const checkInterval = setInterval(() => {
+          if (!fetchingUsers.has(supabaseUserId)) {
+            clearInterval(checkInterval);
+            const cached = dbUserCache.get(supabaseUserId);
+            resolve(cached?.user || null);
+          }
+        }, 100);
+      });
+    }
+
+    // 実行中フラグを設定
+    setFetchingUsers(prev => new Set([...prev, supabaseUserId]));
+    
     try {
+      console.time(`🔍 fetchDbUser-${supabaseUserId}`);
+      
       const response = await fetch('/api/auth/get-db-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ supabaseId: supabaseUserId })
       });
       
+      console.timeEnd(`🔍 fetchDbUser-${supabaseUserId}`);
+      
       if (response.ok) {
         const data = await response.json();
+        
+        // キャッシュに保存
+        setDbUserCache(prev => new Map(prev.set(supabaseUserId, {
+          user: data.user,
+          timestamp: Date.now()
+        })));
+        
         return data.user;
       }
     } catch (error) {
       console.error('DBユーザー取得エラー:', error);
+    } finally {
+      // 実行中フラグを解除
+      setFetchingUsers(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(supabaseUserId);
+        return newSet;
+      });
     }
     return null;
   };

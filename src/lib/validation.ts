@@ -1,4 +1,3 @@
-// セキュリティ: 入力値検証のユーティリティ関数
 
 export function validateEmail(email: string): { isValid: boolean; sanitized: string } {
   const sanitized = email.toLowerCase().trim();
@@ -50,7 +49,6 @@ export function validateAttendance(attendance: number): { isValid: boolean; erro
   return { isValid: true };
 }
 
-// セキュリティ: SQL Injection対策のためのID検証
 export function validateId(id: string): { isValid: boolean; error?: string } {
   // UUIDまたは特定のパターンのIDのみ許可
   const idRegex = /^[a-zA-Z0-9\-_]{1,50}$/;

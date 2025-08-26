@@ -12,10 +12,8 @@ export async function addOwner(eventId: number, userEmail: string) {
     // オーナー権限確認
     await requireOwnerPermission(dbUser.id, eventId);
 
-    // セキュリティ: 入力値のサニタイゼーション
     const sanitizedEmail = userEmail.toLowerCase().trim();
     
-    // セキュリティ: メールアドレス形式の厳密な検証
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(sanitizedEmail)) {
       throw new Error('無効なメールアドレス形式です');

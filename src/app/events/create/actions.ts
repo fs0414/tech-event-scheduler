@@ -52,7 +52,6 @@ export async function createEvent(formData: FormData) {
     const attendance = parseInt(formData.get('attendance') as string) || 0;
     const ownerIds = formData.getAll('ownerIds') as string[];
 
-    // セキュリティ: 入力値の検証とサニタイゼーション
     const sanitizedTitle = title?.trim();
     if (!sanitizedTitle || sanitizedTitle.length === 0) {
       throw new Error('イベント名は必須です');
@@ -61,7 +60,6 @@ export async function createEvent(formData: FormData) {
       throw new Error('イベント名は200文字以内で入力してください');
     }
     
-    // セキュリティ: URLの検証
     const sanitizedEventUrl = eventUrl?.trim();
     if (sanitizedEventUrl) {
       try {
@@ -71,7 +69,6 @@ export async function createEvent(formData: FormData) {
       }
     }
     
-    // セキュリティ: 出席者数の検証
     if (!Number.isInteger(attendance) || attendance < 0 || attendance > 10000) {
       throw new Error('出席者数は0以上10000以下の整数である必要があります');
     }

@@ -13,12 +13,10 @@ export interface AuthenticatedUser {
   dbUser: PrismaUser;
 }
 
-// セキュリティ: 公開可能なユーザー情報のみを含む型
 export interface PublicUserInfo {
   id: string;
   name: string | null;
   email: string;
 }
 
-// セキュリティ: 機密情報を除外したユーザー型
 export type SafeUser = Omit<PrismaUser, 'supabaseId'>;

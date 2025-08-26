@@ -9,12 +9,10 @@ export interface UpdateAttendanceResponse {
   newAttendance?: number;
 }
 
-// セキュリティ: 公開可能な情報のみを含むレスポンス型
 export interface SearchUserResponse {
   id: string;
   name: string;
   email: string;
-  // セキュリティ: supabaseId, 作成日時等の機密情報は除外
 }
 
 export interface OwnerActionResponse {

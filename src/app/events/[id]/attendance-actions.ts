@@ -12,7 +12,6 @@ export async function updateAttendance(eventId: number, newAttendance: number) {
     // オーナー権限確認
     await requireOwnerPermission(dbUser.id, eventId);
 
-    // セキュリティ: 入力値の検証
     if (!Number.isInteger(newAttendance) || newAttendance < 0 || newAttendance > 10000) {
       throw new Error('出席者数は0以上10000以下の整数である必要があります');
     }

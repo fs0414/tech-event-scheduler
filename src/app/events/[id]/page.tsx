@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getCurrentUserForPage } from '@/lib/auth-helpers';
-import { getEventById, getEventTimers, checkEventOwnership } from '@/lib/data';
+import { getEventWithOwnership } from '@/lib/data';
 import EventDetailClient from '@/components/event-detail-client';
 
 
@@ -19,16 +19,14 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
   // 現在のユーザーを取得
   const currentUser = await getCurrentUserForPage();
 
-  // 並列でデータを取得して最適化
-  const [event, timers, isOwner] = await Promise.all([
-    getEventById(eventId),
-    getEventTimers(eventId),
-    currentUser ? checkEventOwnership(currentUser.id, eventId) : Promise.resolve(false)
-  ]);
+  // 統合されたクエリでデータを取得（パフォーマンス最適化）
+  const eventData = await getEventWithOwnership(eventId, currentUser?.id);
 
-  if (!event) {
+  if (!eventData) {
     notFound();
   }
+
+  const { event, isOwner } = eventData;
 
   return <EventDetailClient event={event} currentUser={currentUser} isOwner={isOwner} />;
 }

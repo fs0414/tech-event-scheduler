@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 import { generateUserTimestampId } from '@/lib/temporal';
+import { cache } from 'react';
 import type { User } from '@prisma/client';
 import type { AuthenticatedUser } from '@/types/auth';
 
@@ -67,7 +68,7 @@ export async function requireOwnerPermission(userId: string, eventId: number): P
   }
 }
 
-export async function getCurrentUserForPage(): Promise<User | null> {
+export const getCurrentUserForPage = cache(async (): Promise<User | null> => {
   try {
     const authUser = await getCurrentAuthenticatedUser();
     return authUser?.dbUser || null;
@@ -75,7 +76,7 @@ export async function getCurrentUserForPage(): Promise<User | null> {
     console.error('ページ用ユーザー取得エラー:', error);
     return null;
   }
-}
+});
 
 export async function getCurrentUserWithAutoCreate(): Promise<User> {
   try {

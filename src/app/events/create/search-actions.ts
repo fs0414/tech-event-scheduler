@@ -8,10 +8,8 @@ export async function searchUserByEmail(email: string) {
     // 認証確認とユーザー情報取得
     const { dbUser: currentUser } = await requireAuthentication();
 
-    // セキュリティ: 入力値のサニタイゼーション
     const sanitizedEmail = email.toLowerCase().trim();
     
-    // セキュリティ: メールアドレス形式の厳密な検証
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(sanitizedEmail)) {
       return null;
@@ -24,7 +22,6 @@ export async function searchUserByEmail(email: string) {
         id: true,
         name: true,
         email: true
-        // セキュリティ: supabaseId, createdAt, updatedAt等は除外
       }
     });
 
