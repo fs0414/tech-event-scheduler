@@ -271,3 +271,99 @@ export const createSpacingClasses = (
   
   return `${prefix}${directionSuffix}-[${sizeValue}]`;
 };
+
+// Stats カード用のクラス生成
+export const createStatsCardClasses = (
+  variant: 'paleAccent' | 'mist' | 'soft' | 'glacier' | 'cream' | 'pearl' = 'paleAccent'
+) => {
+  const bgClasses = {
+    paleAccent: UI_CONSTANTS.colors.paleAccentBg,
+    mist: UI_CONSTANTS.colors.mistBg,
+    soft: UI_CONSTANTS.colors.softBg,
+    glacier: UI_CONSTANTS.colors.glacierBg,
+    cream: UI_CONSTANTS.colors.creamBg,
+    pearl: UI_CONSTANTS.colors.pearlBg,
+  };
+  
+  const borderClasses = {
+    paleAccent: 'border border-[#cffafe]',
+    mist: 'border border-[#e4e7eb]',
+    soft: 'border border-[#e2e8f0]',
+    glacier: 'border border-[#dbeafe]',
+    cream: 'border border-[#fef7e3]',
+    pearl: 'border border-[#f3f4f6]',
+  };
+  
+  return cn(
+    "flex flex-col items-center p-2",
+    UI_CONSTANTS.radius.md,
+    bgClasses[variant],
+    borderClasses[variant]
+  );
+};
+
+// Tabs用のクラス生成
+export const createTabsListClasses = (
+  variant: 'primary' | 'secondary' | 'soft' | 'glacier' = 'soft'
+) => {
+  const bgClasses = {
+    primary: UI_CONSTANTS.colors.mutedBg,
+    secondary: UI_CONSTANTS.colors.softBg,
+    soft: UI_CONSTANTS.colors.mistBg,
+    glacier: UI_CONSTANTS.colors.glacierBg,
+  };
+  
+  return cn(
+    "grid w-full mb-6",
+    UI_CONSTANTS.radius.lg,
+    bgClasses[variant],
+    "p-1"
+  );
+};
+
+export const createTabsTriggerClasses = (
+  isActive: boolean = false,
+  variant: 'primary' | 'accent' | 'soft' = 'primary'
+) => {
+  const baseClasses = cn(
+    "gap-2 px-3 py-2",
+    UI_CONSTANTS.radius.md,
+    UI_CONSTANTS.transitions.default,
+    "font-medium text-sm"
+  );
+  
+  if (isActive) {
+    const activeClasses = {
+      primary: cn(
+        "bg-white text-[#00c4cc] shadow-sm",
+        "border border-[#e2e8f0]"
+      ),
+      accent: cn(
+        UI_CONSTANTS.colors.primary,
+        "text-white shadow-sm"
+      ),
+      soft: cn(
+        "bg-white text-[#00c4cc] shadow-sm",
+        "border border-[#cffafe]"
+      ),
+    };
+    return cn(baseClasses, activeClasses[variant]);
+  }
+  
+  const inactiveClasses = {
+    primary: cn(
+      "text-[#4b5563] hover:text-[#00c4cc]",
+      "hover:bg-white/50"
+    ),
+    accent: cn(
+      "text-[#4b5563] hover:text-[#00c4cc]",
+      "hover:bg-white/50"
+    ),
+    soft: cn(
+      "text-[#4b5563] hover:text-[#00c4cc]",
+      "hover:bg-white/50"
+    ),
+  };
+  
+  return cn(baseClasses, inactiveClasses[variant]);
+};

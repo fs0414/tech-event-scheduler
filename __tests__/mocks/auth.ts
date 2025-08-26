@@ -1,6 +1,11 @@
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { User as PrismaUser } from '@prisma/client';
 import { AuthContextType } from '@/types/auth';
+import { Temporal } from 'temporal-polyfill';
+import { plainDateTimeToDate } from '@/lib/temporal';
+
+// Mock temporal dates for consistent testing
+const mockTemporalDate = Temporal.PlainDateTime.from('2024-01-01T00:00:00');
 
 export const mockSupabaseUser: SupabaseUser = {
   id: 'mock-supabase-id',
@@ -16,8 +21,8 @@ export const mockPrismaUser: PrismaUser = {
   supabaseId: 'mock-supabase-id',
   name: 'テストユーザー',
   email: 'test@gmail.com',
-  createdAt: new Date('2024-01-01'),
-  updatedAt: new Date('2024-01-01')
+  createdAt: plainDateTimeToDate(mockTemporalDate),
+  updatedAt: plainDateTimeToDate(mockTemporalDate)
 };
 
 export const createMockAuth = (overrides?: Partial<AuthContextType>): AuthContextType => ({

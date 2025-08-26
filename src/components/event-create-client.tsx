@@ -2,14 +2,18 @@
 
 import { useState, useEffect, useRef, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFormStatus } from 'react-dom';
-import { createEvent, searchUserByEmail } from '@/app/events/create/actions';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createEvent } from '@/app/events/_actions/event.actions';
+import { searchUserByEmail } from '@/app/events/_actions/user.actions';
+import { createEventClientSchema, type CreateEventClientInput } from '@/lib/validations/event';
 import type { User } from '@prisma/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { ArrowLeft, Search, Loader2, X } from 'lucide-react';
 import { UI_CONSTANTS, cn, createButtonClasses, createCardClasses, createTypographyClasses } from '@/lib/ui-constants';
 
@@ -17,21 +21,24 @@ interface EventCreateClientProps {
   currentUser: User;
 }
 
-function SubmitButton({ disabled }: { disabled: boolean }) {
-  const { pending } = useFormStatus();
-  
+interface SubmitButtonProps {
+  disabled: boolean;
+  isSubmitting: boolean;
+}
+
+function SubmitButton({ disabled, isSubmitting }: SubmitButtonProps) {
   return (
     <Button
       type="submit"
-      disabled={pending || disabled}
+      disabled={disabled || isSubmitting}
       className={cn(
         createButtonClasses('primary', 'medium'),
         UI_CONSTANTS.transitions.default
       )}
     >
-      {pending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+      {isSubmitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
       <span className={createTypographyClasses('s', 'medium', 'body')}>
-        {pending ? '作成中...' : 'イベントを作成'}
+        {isSubmitting ? '作成中...' : 'イベントを作成'}
       </span>
     </Button>
   );
@@ -43,11 +50,15 @@ export default function EventCreateClient({ currentUser }: EventCreateClientProp
   const searchRef = useRef<HTMLDivElement>(null);
   const [isPending, startTransition] = useTransition();
   
-  // フォームデータ
-  const [formData, setFormData] = useState({
-    title: '',
-    eventUrl: '',
-    attendance: 0
+  // React Hook Formのセットアップ
+  const form = useForm<CreateEventClientInput>({
+    mode: 'onChange',
+    defaultValues: {
+      title: '',
+      eventUrl: '',
+      attendance: '0',
+      ownerIds: []
+    }
   });
   
   // 選択されたオーナー（作成者は自動的に含まれる）
@@ -73,13 +84,6 @@ export default function EventCreateClient({ currentUser }: EventCreateClientProp
     };
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'number' ? parseInt(value) || 0 : value
-    }));
-  };
 
   const handleEmailSearch = (value: string) => {
     setEmailSearch(value);
@@ -123,10 +127,34 @@ export default function EventCreateClient({ currentUser }: EventCreateClientProp
     setSelectedOwners(prev => prev.filter(owner => owner.id !== userId));
   };
 
-  const handleSubmit = async (formData: FormData) => {
+  // フォーム送信処理
+  const onSubmit = async (data: CreateEventClientInput) => {
     try {
       setError(null);
+      
+      // クライアントサイドバリデーション
+      const validationResult = createEventClientSchema.safeParse(data);
+      if (!validationResult.success) {
+        const firstError = validationResult.error.issues[0];
+        setError(firstError?.message || 'フォームデータが無効です');
+        return;
+      }
+      
+      // 選択されたオーナーのIDをフォームデータに追加
+      const submitData = {
+        ...data,
+        ownerIds: selectedOwners.map(owner => owner.id)
+      };
+
+      // FormDataに変換してServer Actionを呼び出し
+      const formData = new FormData();
+      formData.append('title', submitData.title);
+      formData.append('eventUrl', submitData.eventUrl || '');
+      formData.append('attendance', submitData.attendance);
+      submitData.ownerIds.forEach(id => formData.append('ownerIds', id));
+
       await createEvent(formData);
+      router.push('/events');
     } catch (error: any) {
       setError(error.message);
     }
@@ -174,12 +202,8 @@ export default function EventCreateClient({ currentUser }: EventCreateClientProp
         )}
 
         {/* Form */}
-        <form action={handleSubmit}>
-          {/* Hidden fields for selected owners */}
-          <input type="hidden" name="ownerIds" value={currentUser.id} />
-          {selectedOwners.map(owner => (
-            <input key={owner.id} type="hidden" name="ownerIds" value={owner.id} />
-          ))}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
           
           <Card className={cn(
             createCardClasses('glacier'),
@@ -191,59 +215,67 @@ export default function EventCreateClient({ currentUser }: EventCreateClientProp
             </CardHeader>
             <CardContent className="space-y-4 sm:space-y-6">
               {/* Event Title */}
-              <div>
-                <label htmlFor="title" className={cn(
-                  "block mb-2",
-                  createTypographyClasses('s', 'medium', 'muted')
-                )}>
-                  イベント名 <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  type="text"
-                  id="title"
-                  name="title"
-                  defaultValue={formData.title}
-                  onChange={handleInputChange}
-                  required
-                  placeholder="イベントのタイトルを入力してください"
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className={createTypographyClasses('s', 'medium', 'muted')}>
+                      イベント名 <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="イベントのタイトルを入力してください"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               {/* Event URL */}
-              <div>
-                <label htmlFor="eventUrl" className={cn(
-                  "block mb-2",
-                  createTypographyClasses('s', 'medium', 'muted')
-                )}>
-                  イベントURL
-                </label>
-                <Input
-                  type="url"
-                  id="eventUrl"
-                  name="eventUrl"
-                  defaultValue={formData.eventUrl}
-                  onChange={handleInputChange}
-                  placeholder="https://example.com/event"
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="eventUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className={createTypographyClasses('s', 'medium', 'muted')}>
+                      イベントURL
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="url"
+                        placeholder="https://example.com/event"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               {/* Initial Attendance */}
-              <div>
-                <label htmlFor="attendance" className={cn(
-                  "block mb-2",
-                  createTypographyClasses('s', 'medium', 'muted')
-                )}>
-                  初期参加者数
-                </label>
-                <Input
-                  type="number"
-                  id="attendance"
-                  name="attendance"
-                  defaultValue={formData.attendance}
-                  onChange={handleInputChange}
-                  min="0"
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="attendance"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className={createTypographyClasses('s', 'medium', 'muted')}>
+                      初期参加者数
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="10000"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </CardContent>
           </Card>
 
@@ -444,9 +476,13 @@ export default function EventCreateClient({ currentUser }: EventCreateClientProp
                 キャンセル
               </span>
             </Button>
-            <SubmitButton disabled={!formData.title.trim()} />
+            <SubmitButton 
+              disabled={!form.watch('title')?.trim()} 
+              isSubmitting={form.formState.isSubmitting} 
+            />
           </div>
-        </form>
+          </form>
+        </Form>
       </div>
     </div>
   );

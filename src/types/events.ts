@@ -1,5 +1,6 @@
 import type { Event, User, Owner, Speaker, Article, Timer } from '@prisma/client';
 
+// Prismaのそのままの型を使用
 export type EventWithDetails = Event & {
   owners: (Owner & {
     user: User;

@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Plus, Clock, Trash2, GripVertical, Loader2 } from 'lucide-react';
 import { UI_CONSTANTS, cn, createButtonClasses, createCardClasses, createTypographyClasses } from '@/lib/ui-constants';
-import { addTimerSession, updateTimerSession, deleteTimerSession, reorderTimerSessions } from '@/app/events/[id]/actions';
+import { addTimerSession, updateTimerSession, deleteTimerSession, reorderTimerSessions } from '@/app/events/_actions/timer.actions';
 
 interface EventTimerManagerProps {
   event: Event & {

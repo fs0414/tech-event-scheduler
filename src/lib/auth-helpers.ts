@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
+import { generateUserTimestampId } from '@/lib/temporal';
 import type { User } from '@prisma/client';
 import type { AuthenticatedUser } from '@/types/auth';
 
@@ -94,7 +95,7 @@ export async function getCurrentUserWithAutoCreate(): Promise<User> {
       // ユーザーが存在しない場合は初回ログインとして作成
       dbUser = await prisma.user.create({
         data: {
-          id: `user-${Date.now()}`,
+          id: generateUserTimestampId(),
           supabaseId: user.id,
           email: user.email || '',
           name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User',

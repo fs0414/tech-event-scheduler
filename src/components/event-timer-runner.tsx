@@ -11,11 +11,12 @@ import { UI_CONSTANTS, cn, createButtonClasses, createCardClasses, createTypogra
 
 interface EventTimerRunnerProps {
   timers: Timer[];
+  currentUser?: { id: string; email: string; name: string | null } | null;
 }
 
 type TimerState = 'stopped' | 'running' | 'paused' | 'finished';
 
-export default function EventTimerRunner({ timers }: EventTimerRunnerProps) {
+export default function EventTimerRunner({ timers, currentUser }: EventTimerRunnerProps) {
   const [currentTimerIndex, setCurrentTimerIndex] = useState(0);
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [timerState, setTimerState] = useState<TimerState>('stopped');
@@ -164,6 +165,18 @@ export default function EventTimerRunner({ timers }: EventTimerRunnerProps) {
         return '待機中';
     }
   };
+
+  if (!currentUser) {
+    return (
+      <Card className={createCardClasses('mist')}>
+        <CardContent className="p-6 text-center">
+          <p className={createTypographyClasses('m', 'regular', 'secondary')}>
+            タイマー機能を使用するにはログインしてください
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (sortedTimers.length === 0) {
     return (

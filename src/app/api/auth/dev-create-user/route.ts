@@ -21,7 +21,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Prismaでユーザー情報を取得（存在確認）
     const prismaUser = await prisma.user.findUnique({
       where: { email }
     });
@@ -33,7 +32,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 通常のSupabase Clientを使用してユーザーを作成
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY!
@@ -50,14 +48,12 @@ export async function POST(request: NextRequest) {
     });
 
     if (error) {
-      // ユーザーが既に存在する場合は成功として扱う
       if (error.message.includes('already registered') || error.message.includes('already been registered')) {
         return NextResponse.json({ success: true });
       }
       throw error;
     }
 
-    // 作成されたSupabaseユーザーのIDでPrismaユーザーを更新
     if (data.user) {
       await prisma.user.update({
         where: { email },

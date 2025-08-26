@@ -15,18 +15,18 @@ datasource db {
 }
 
 model User {
-  id          String   @id @default(uuid())
-  supabaseId  String   @unique @map("supabase_id")
-  email       String   @unique
-  name        String?
-  avatarUrl   String?  @map("avatar_url")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  
+  id         String   @id @default(uuid())
+  supabaseId String   @unique @map("supabase_id")
+  email      String   @unique
+  name       String?
+  avatarUrl  String?  @map("avatar_url")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
   // リレーション
   ownerEvents Owner[]
   speakers    Speaker[]
-  
+
   @@map("users")
 }
 
@@ -36,26 +36,26 @@ model Event {
   eventUrl   String?  @map("event_url")
   attendance Int      @default(0)
   createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
-  
-  // リレーション
-  owners     Owner[]
-  speakers   Speaker[]
-  timers     Timer[]
-  
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  owners   Owner[]
+  speakers Speaker[]
+  timers   Timer[]
+
   @@map("events")
 }
 
 model Owner {
-  id      Int    @id @default(autoincrement())
-  userId  String @map("user_id")
-  eventId Int    @map("event_id")
-  role    String @default("participant")
-  
-  // リレーション
-  user    User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  event   Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  
+  id        Int      @id @default(autoincrement())
+  userId    String   @map("user_id")
+  eventId   Int      @map("event_id")
+  role      String   @default("participant")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
   @@unique([userId, eventId])
   @@map("owners")
 }
@@ -66,39 +66,40 @@ model Article {
   description String?
   url         String?
   createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  
-  // リレーション
-  speakers    Speaker[]
-  
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  speakers Speaker[]
+
   @@map("articles")
 }
 
 model Speaker {
-  id        Int     @id @default(autoincrement())
-  userId    String  @map("user_id")
-  eventId   Int     @map("event_id")
-  articleId Int?    @map("article_id")
-  role      String? @default("speaker")
-  
-  // リレーション
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  article   Article? @relation(fields: [articleId], references: [id], onDelete: SetNull)
-  
+  id        Int      @id @default(autoincrement())
+  userId    String   @map("user_id")
+  eventId   Int      @map("event_id")
+  articleId Int?     @map("article_id")
+  role      String?  @default("speaker")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event   Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  article Article? @relation(fields: [articleId], references: [id], onDelete: SetNull)
+
   @@unique([userId, eventId])
   @@map("speakers")
 }
 
 model Timer {
-  id              Int @id @default(autoincrement())
-  durationMinutes Int @map("duration_minutes")
+  id              Int      @id @default(autoincrement())
+  durationMinutes Int      @map("duration_minutes")
   sequence        Int
-  eventId         Int @map("event_id")
-  
-  // リレーション
-  event           Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  
+  eventId         Int      @map("event_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
   @@unique([eventId, sequence])
   @@map("timers")
 }

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { updateAttendance } from '@/app/events/[id]/attendance-actions';
+import { updateAttendance } from '@/app/events/_actions/event.actions';
 import { UserCheck, Plus, Loader2 } from 'lucide-react';
 import type { AttendanceCounterProps } from '@/types/events';
 import { UI_CONSTANTS, cn, createButtonClasses, createTypographyClasses } from '@/lib/ui-constants';
@@ -25,8 +25,8 @@ export default function AttendanceCounter({ currentAttendance, eventId, isOwner 
         setError(null);
         const result = await updateAttendance(eventId, newAttendance);
         // サーバーから最新の値をリアルタイムで反映
-        if (result.newAttendance !== undefined) {
-          setAttendance(result.newAttendance);
+        if (result.attendance !== undefined) {
+          setAttendance(result.attendance);
         }
       } catch (error: any) {
         setError(error.message);
@@ -41,7 +41,7 @@ export default function AttendanceCounter({ currentAttendance, eventId, isOwner 
     return (
       <Card className={cn(UI_CONSTANTS.transitions.default)}>
         <CardContent className={cn(UI_CONSTANTS.spacing.sectionPadding)}>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className={cn("flex items-center", UI_CONSTANTS.spacing.smallGap)}>
               <UserCheck className={cn("h-5 w-5", UI_CONSTANTS.colors.primaryText)} />
               <span className={createTypographyClasses('m', 'medium', 'body')}>現在の出席者数</span>
@@ -66,37 +66,45 @@ export default function AttendanceCounter({ currentAttendance, eventId, isOwner 
       
       <Card className={cn(UI_CONSTANTS.transitions.default, UI_CONSTANTS.states.hover)}>
         <CardContent className={cn(UI_CONSTANTS.spacing.sectionPadding)}>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className={cn("flex items-center", UI_CONSTANTS.spacing.smallGap)}>
               <UserCheck className={cn("h-5 w-5", UI_CONSTANTS.colors.primaryText)} />
               <span className={createTypographyClasses('s', 'medium', 'muted')}>現在の出席者数</span>
             </div>
             
-            <div className={cn("flex items-center", UI_CONSTANTS.spacing.gap)}>
+            <div className="flex items-center justify-between sm:justify-start gap-3">
               <div className={createTypographyClasses('xxl', 'bold', 'primary')}>
                 {attendance}人
               </div>
               
-              <Button
-                onClick={() => handleAttendanceChange(1)}
-                disabled={isPending}
-                className={cn(
-                  createButtonClasses('primary', 'medium'),
-                  isPending && UI_CONSTANTS.states.disabled,
-                  UI_CONSTANTS.transitions.bounce
-                )}
-              >
-                {isPending ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                    <span className={createTypographyClasses('s', 'medium', 'body')}>更新中</span>
-                  </>
-                ) : (
-                  <>
-                    <Plus className="h-4 w-4 mr-1" />
-                  </>
-                )}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => handleAttendanceChange(-1)}
+                  disabled={isPending || attendance === 0}
+                  size="sm"
+                  variant="outline"
+                  className="h-8 w-8 p-0"
+                >
+                  -
+                </Button>
+                
+                <Button
+                  onClick={() => handleAttendanceChange(1)}
+                  disabled={isPending}
+                  size="sm"
+                  className={cn(
+                    "h-8 w-8 p-0",
+                    createButtonClasses('primary', 'small'),
+                    isPending && UI_CONSTANTS.states.disabled
+                  )}
+                >
+                  {isPending ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Plus className="h-3 w-3" />
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>

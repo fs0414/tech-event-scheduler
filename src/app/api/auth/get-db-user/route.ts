@@ -12,7 +12,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // セキュリティ: 公開可能な情報のみを返す
     const user = await prisma.user.findUnique({
       where: { supabaseId },
       select: {
@@ -22,11 +21,8 @@ export async function POST(request: NextRequest) {
         avatarUrl: true,
         createdAt: true,
         updatedAt: true
-        // セキュリティ: supabaseIdは除外
       }
     });
-
-    console.log('🟥', { user });
 
     return NextResponse.json({ user });
 

@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { searchUserByEmail, addOrganizer } from '@/app/events/[id]/organizer-actions';
+import { searchUserByEmailAuth } from '@/app/events/_actions/user.actions';
+import { addOrganizer } from '@/app/events/_actions/owner.actions';
 import { Search, Crown, Loader2, X, UserPlus } from 'lucide-react';
 import { UI_CONSTANTS, cn, createButtonClasses, createCardClasses, createTypographyClasses } from '@/lib/ui-constants';
 
@@ -28,10 +29,20 @@ export default function AddOrganizerForm({ eventId, onSuccess, onCancel }: AddOr
     startSearchTransition(async () => {
       try {
         setError(null);
-        const result = await searchUserByEmail(email);
-        setSearchResult(result);
-        if (!result) {
+        const result = await searchUserByEmailAuth(email);
+        
+        if (result.error) {
+          // エラーがある場合
+          setError(result.error);
+          setSearchResult(null);
+        } else if (result.user) {
+          // ユーザーが見つかった場合
+          setSearchResult(result.user);
+          setError(null);
+        } else {
+          // ユーザーが見つからない場合
           setError('指定されたメールアドレスのユーザーが見つかりません');
+          setSearchResult(null);
         }
       } catch (error: any) {
         setError(error.message);
