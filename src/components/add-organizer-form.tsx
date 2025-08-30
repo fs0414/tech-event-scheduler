@@ -98,7 +98,7 @@ export default function AddOrganizerForm({ eventId, isOwner, onSuccess, onCancel
           <div className="flex gap-2">
             <Input
               type="email"
-              placeholder="メールアドレスを入力..."
+              placeholder="メールアドレスを入力（完全一致）"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}

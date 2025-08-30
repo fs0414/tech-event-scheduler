@@ -56,7 +56,6 @@ export default function EventCreateClient({ currentUser }: EventCreateClientProp
     defaultValues: {
       title: '',
       eventUrl: '',
-      attendance: '0',
       ownerIds: []
     }
   });
@@ -150,7 +149,7 @@ export default function EventCreateClient({ currentUser }: EventCreateClientProp
       const formData = new FormData();
       formData.append('title', submitData.title);
       formData.append('eventUrl', submitData.eventUrl || '');
-      formData.append('attendance', submitData.attendance);
+      formData.append('attendance', '0');
       submitData.ownerIds.forEach(id => formData.append('ownerIds', id));
 
       await createEvent(formData);
@@ -255,27 +254,6 @@ export default function EventCreateClient({ currentUser }: EventCreateClientProp
                 )}
               />
 
-              {/* Initial Attendance */}
-              <FormField
-                control={form.control}
-                name="attendance"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className={createTypographyClasses('s', 'medium', 'muted')}>
-                      初期参加者数
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="0"
-                        max="10000"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </CardContent>
           </Card>
 
@@ -331,15 +309,15 @@ export default function EventCreateClient({ currentUser }: EventCreateClientProp
                   "mb-4",
                   createTypographyClasses('xs', 'medium', 'muted')
                 )}>
-                  メールアドレスで検索してイベントの共同管理者を追加できます
+                  メールアドレスでユーザーを検索してイベントの共同管理者を追加できます
                 </p>
                 
                 {/* Email Search Input */}
                 <div className="relative" ref={searchRef}>
                   <div className="relative">
                     <Input
-                      type="text"
-                      placeholder="メールアドレスで検索..."
+                      type="email"
+                      placeholder="メールアドレスで検索（完全一致）"
                       value={emailSearch}
                       onChange={(e) => handleEmailSearch(e.target.value)}
                       className="pl-10"

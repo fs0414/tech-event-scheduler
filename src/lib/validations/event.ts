@@ -70,7 +70,6 @@ export const createEventFormSchema = z.object({
 export const createEventClientSchema = z.object({
   title: z.string().min(1, 'イベント名は必須です'),
   eventUrl: z.string(),
-  attendance: z.string(),
   ownerIds: z.array(z.string())
 });
 
