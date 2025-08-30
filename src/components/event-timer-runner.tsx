@@ -210,7 +210,7 @@ export default function EventTimerRunner({ timers, currentUser }: EventTimerRunn
               timerState === 'running' && "bg-[#16a34a] text-white",
               timerState === 'paused' && "bg-[#eab308] text-white", 
               timerState === 'finished' && "bg-[#dc2626] text-white",
-              timerState === 'idle' && "bg-gray-500 text-white"
+              timerState === 'stopped' && "bg-gray-500 text-white"
             )}>
               {getStateText()}
             </Badge>

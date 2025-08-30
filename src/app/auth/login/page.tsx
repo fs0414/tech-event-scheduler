@@ -2,9 +2,56 @@
 
 import { LoginForm } from '@/components/login-form'
 import { UI_CONSTANTS, cn, createCardClasses, createTypographyClasses } from '@/lib/ui-constants'
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
+import { useAuth } from '@/app/providers'
+import { useRouter, useSearchParams } from 'next/navigation'
 
-function LoginPageContent() {
+function LoginPageContentWithAuth() {
+  const { supabaseUser, loading } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    // 認証済みの場合は自動的にリダイレクト
+    if (supabaseUser && !loading) {
+      const isOAuthCallback = searchParams.get('oauth_callback') === 'true';
+      const next = searchParams.get('next') || '/events';
+      
+      // OAuthコールバック後または既に認証済みの場合
+      if (isOAuthCallback || supabaseUser) {
+        router.push(next);
+      }
+    }
+  }, [supabaseUser, loading, searchParams, router]);
+
+  // 認証チェック中はローディング表示
+  if (loading) {
+    return (
+      <div className={cn("min-h-screen flex items-center justify-center", UI_CONSTANTS.colors.pageBg)}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00c4cc] mx-auto mb-4"></div>
+          <p className={cn(createTypographyClasses('m', 'regular', 'muted'))}>
+            認証状態を確認中...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // 既に認証済みの場合はリダイレクト処理中を表示
+  if (supabaseUser) {
+    return (
+      <div className={cn("min-h-screen flex items-center justify-center", UI_CONSTANTS.colors.pageBg)}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00c4cc] mx-auto mb-4"></div>
+          <p className={cn(createTypographyClasses('m', 'regular', 'muted'))}>
+            リダイレクト中...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={cn("min-h-screen flex items-center justify-center", UI_CONSTANTS.colors.pageBg)}>
       <div className="w-full max-w-md px-6">
@@ -71,6 +118,23 @@ function LoginPageContent() {
       </div>
     </div>
   )
+}
+
+function LoginPageContent() {
+  return (
+    <Suspense fallback={
+      <div className={cn("min-h-screen flex items-center justify-center", UI_CONSTANTS.colors.pageBg)}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00c4cc] mx-auto mb-4"></div>
+          <p className={cn(createTypographyClasses('m', 'regular', 'muted'))}>
+            読み込み中...
+          </p>
+        </div>
+      </div>
+    }>
+      <LoginPageContentWithAuth />
+    </Suspense>
+  );
 }
 
 export default function Page() {
