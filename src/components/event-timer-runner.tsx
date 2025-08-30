@@ -308,46 +308,6 @@ export default function EventTimerRunner({ timers, currentUser }: EventTimerRunn
         </CardContent>
       </Card>
 
-      {/* Current セッション */}
-      <Card className={createCardClasses('soft')}>
-        <CardHeader>
-          <CardTitle className={createTypographyClasses('m', 'bold', 'muted')}>
-            Current
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {sortedTimers.map((timer, index) => (
-              <div
-                key={timer.id}
-                className={cn(
-                  "flex items-center justify-between p-3 rounded-lg border",
-                  index === currentTimerIndex 
-                    ? "bg-[#f0fdff] border-[#00c4cc]" 
-                    : "bg-white border-[#e2e8f0]"
-                )}
-              >
-                <div className="flex items-center gap-3">
-                  <Badge 
-                    variant={index === currentTimerIndex ? "default" : "outline"}
-                    className={index === currentTimerIndex ? "bg-[#00c4cc] text-white" : ""}
-                  >
-                    {timer.sequence}
-                  </Badge>
-                  <span className={createTypographyClasses('s', 'medium', 'muted')}>
-                    {timer.durationMinutes}分
-                  </span>
-                </div>
-                {index === currentTimerIndex && (
-                  <Badge className={cn("text-xs", getStateColor(), "bg-current text-white")}>
-                    現在
-                  </Badge>
-                )}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

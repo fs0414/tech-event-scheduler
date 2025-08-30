@@ -70,145 +70,129 @@ export default function EventDetailTabs({ event, currentUser, isOwner }: EventDe
       {/* タブコンテンツ */}
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as typeof activeTab)} className="w-full">
         <TabsList className={cn(createTabsListClasses('soft'), "grid-cols-3")}>
-          <TabsTrigger 
-            value="participants" 
+          <TabsTrigger
+            value="participants"
             className={createTabsTriggerClasses(activeTab === 'participants', 'primary')}
           >
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">管理者</span>
             <span className="sm:hidden">参加</span>
           </TabsTrigger>
-          <TabsTrigger 
-            value="speakers" 
-            className={createTabsTriggerClasses(activeTab === 'speakers', 'primary')}
-          >
-            <Calendar className="h-4 w-4" />
-            <span className="hidden sm:inline">スピーカー</span>
-            <span className="sm:hidden">発表</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="timers" 
+          <TabsTrigger
+            value="timers"
             className={createTabsTriggerClasses(activeTab === 'timers', 'primary')}
           >
             <Clock className="h-4 w-4" />
             <span className="hidden sm:inline">タイマー</span>
             <span className="sm:hidden">時間</span>
           </TabsTrigger>
+          <TabsTrigger
+            value="speakers"
+            className={createTabsTriggerClasses(activeTab === 'speakers', 'primary')}
+          >
+            <Calendar className="h-4 w-4" />
+            <span className="hidden sm:inline">スピーカー</span>
+            <span className="sm:hidden">発表</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="participants" className="space-y-6">
 
-        <Card className={createCardClasses('default')}>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle className={createTypographyClasses('l', 'bold', 'primary')}>
-                管理者 ({eventOwners.length})
-              </CardTitle>
-              {isOwner && !showAddOrganizerForm && (
-                <Button
-                  onClick={() => setShowAddOrganizerForm(true)}
-                  size="sm"
-                  className={cn(createButtonClasses('secondary', 'small'), "gap-2")}
-                >
-                  <UserPlus className="h-4 w-4" />
-                  <span className="hidden sm:inline">管理者を追加</span>
-                  <span className="sm:hidden">追加</span>
-                </Button>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent>
-            {showAddOrganizerForm && (
-              <div className="mb-6 p-4 border rounded-lg bg-muted/30">
-                <AddOrganizerForm
-                  eventId={event.id}
-                  isOwner={isOwner}
-                  onSuccess={handleAddOrganizerSuccess}
-                  onCancel={() => setShowAddOrganizerForm(false)}
-                />
+          <Card className={createCardClasses('default')}>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle className={createTypographyClasses('l', 'bold', 'primary')}>
+                  管理者 ({eventOwners.length})
+                </CardTitle>
+                {isOwner && !showAddOrganizerForm && (
+                  <Button
+                    onClick={() => setShowAddOrganizerForm(true)}
+                    size="sm"
+                    className={cn(createButtonClasses('secondary', 'small'), "gap-2")}
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    <span className="hidden sm:inline">管理者を追加</span>
+                    <span className="sm:hidden">追加</span>
+                  </Button>
+                )}
               </div>
-            )}
-            
-            <div className="space-y-3">
-              {eventOwners.map((owner) => {
-                const ownerRecord = event.owners.find(o => o.userId === owner.id);
-                return (
-                  <div key={owner.id} className="flex items-center justify-between p-3 border rounded-lg bg-card">
-                    <div className="flex items-center gap-3">
-                      <Crown className={cn("h-4 w-4", UI_CONSTANTS.colors.accent)} />
-                      <div>
-                        <div className={createTypographyClasses('m', 'medium', 'primary')}>
-                          {owner.name}
-                        </div>
-                        <div className={createTypographyClasses('s', 'regular', 'muted')}>
-                          {owner.email}
+            </CardHeader>
+            <CardContent>
+              {showAddOrganizerForm && (
+                <div className="mb-6 p-4 border rounded-lg bg-muted/30">
+                  <AddOrganizerForm
+                    eventId={event.id}
+                    isOwner={isOwner}
+                    onSuccess={handleAddOrganizerSuccess}
+                    onCancel={() => setShowAddOrganizerForm(false)}
+                  />
+                </div>
+              )}
+
+              <div className="space-y-3">
+                {eventOwners.map((owner) => {
+                  return (
+                    <div key={owner.id} className="flex items-center justify-between p-3 border rounded-lg bg-card">
+                      <div className="flex items-center gap-3">
+                        <Crown className={cn("h-4 w-4", UI_CONSTANTS.colors.accent)} />
+                        <div>
+                          <div className={createTypographyClasses('m', 'medium', 'primary')}>
+                            {owner.name}
+                          </div>
+                          <div className={createTypographyClasses('s', 'regular', 'muted')}>
+                            {owner.email}
+                          </div>
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={ownerRecord?.role === OWNER_ROLES.ADMIN ? 'default' : 'secondary'}>
-                        {OWNER_ROLE_LABELS[ownerRecord?.role as keyof typeof OWNER_ROLE_LABELS] || 'メンバー'}
-                      </Badge>
-                      {isOwner && ownerRecord && (
-                        <select
-                          value={ownerRecord.role}
-                          onChange={(e) => handleRoleChange(ownerRecord.id, parseInt(e.target.value))}
-                          className="text-xs px-2 py-1 border rounded"
-                        >
-                          <option value={OWNER_ROLES.ADMIN}>管理者</option>
-                          <option value={OWNER_ROLES.MEMBER}>メンバー</option>
-                        </select>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="speakers" className="space-y-4">
+          <Card className={createCardClasses('default')}>
+            <CardHeader>
+              <CardTitle className={createTypographyClasses('l', 'bold', 'primary')}>
+                スピーカー ({eventSpeakers.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {eventSpeakers.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className={createTypographyClasses('m', 'regular', 'muted')}>
+                    まだスピーカーが登録されていません
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {eventSpeakers.map((speaker) => (
+                    <div key={speaker.id} className="flex items-center justify-between p-4 border rounded-lg bg-card">
+                      <div className="flex items-center gap-4">
+                        <Calendar className={cn("h-5 w-5", UI_CONSTANTS.colors.primary)} />
+                        <div>
+                          <div className={createTypographyClasses('m', 'medium', 'primary')}>
+                            {speaker.user.name}
+                          </div>
+                          <div className={createTypographyClasses('s', 'regular', 'muted')}>
+                            {speaker.user.email}
+                          </div>
+                        </div>
+                      </div>
+                      {speaker.article && (
+                        <Badge variant="outline">
+                          記事あり
+                        </Badge>
                       )}
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      </TabsContent>
-
-      <TabsContent value="speakers" className="space-y-4">
-        <Card className={createCardClasses('default')}>
-          <CardHeader>
-            <CardTitle className={createTypographyClasses('l', 'bold', 'primary')}>
-              スピーカー ({eventSpeakers.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {eventSpeakers.length === 0 ? (
-              <div className="text-center py-8">
-                <div className={createTypographyClasses('m', 'regular', 'muted')}>
-                  まだスピーカーが登録されていません
+                  ))}
                 </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {eventSpeakers.map((speaker) => (
-                  <div key={speaker.id} className="flex items-center justify-between p-4 border rounded-lg bg-card">
-                    <div className="flex items-center gap-4">
-                      <Calendar className={cn("h-5 w-5", UI_CONSTANTS.colors.primary)} />
-                      <div>
-                        <div className={createTypographyClasses('m', 'medium', 'primary')}>
-                          {speaker.user.name}
-                        </div>
-                        <div className={createTypographyClasses('s', 'regular', 'muted')}>
-                          {speaker.user.email}
-                        </div>
-                      </div>
-                    </div>
-                    {speaker.article && (
-                      <Badge variant="outline">
-                        記事あり
-                      </Badge>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </TabsContent>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="timers" className="space-y-4">
           <EventTimerRunner timers={eventTimers} currentUser={currentUser} />

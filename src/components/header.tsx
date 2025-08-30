@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/app/providers'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useState } from 'react'
@@ -35,11 +36,21 @@ export function Header({ isPublic = false }: HeaderProps) {
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200"
               >
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <span className="text-white text-sm font-semibold">
-                    {supabaseUser.user_metadata.full_name?.[0] || supabaseUser.email?.[0]?.toUpperCase()}
-                  </span>
-                </div>
+                {dbUser?.avatarUrl || supabaseUser.user_metadata.avatar_url ? (
+                  <Image
+                    src={dbUser?.avatarUrl || supabaseUser.user_metadata.avatar_url}
+                    alt={dbUser?.name || supabaseUser.user_metadata.full_name || 'User'}
+                    width={32}
+                    height={32}
+                    className="rounded-lg object-cover"
+                  />
+                ) : (
+                  <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                    <span className="text-white text-sm font-semibold">
+                      {supabaseUser.user_metadata.full_name?.[0] || supabaseUser.email?.[0]?.toUpperCase()}
+                    </span>
+                  </div>
+                )}
                 <svg className="w-4 h-4 text-gray-600" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
                   <path d="M19 9l-7 7-7-7"></path>
                 </svg>
@@ -67,13 +78,6 @@ export function Header({ isPublic = false }: HeaderProps) {
                       onClick={() => setIsMenuOpen(false)}
                     >
                       プロフィール
-                    </Link>
-                    <Link
-                      href="/settings"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      設定
                     </Link>
                   </div>
                   <hr className="my-1 border-gray-100" />
