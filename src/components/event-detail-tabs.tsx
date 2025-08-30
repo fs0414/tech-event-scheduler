@@ -11,7 +11,7 @@ import AttendanceCounter from '@/components/attendance-counter';
 import AddOrganizerForm from '@/components/add-organizer-form';
 import EventTimerManager from '@/components/event-timer-manager';
 import EventTimerRunner from '@/components/event-timer-runner';
-import { changeUserRole } from '@/app/events/_actions/owner.actions';
+import { changeUserRole } from '@/app/events/_actions/owner.action';
 import { OWNER_ROLES, OWNER_ROLE_LABELS } from '@/lib/owner-role';
 import type { Event, User, Owner, Speaker, Article, Timer } from '@prisma/client';
 

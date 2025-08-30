@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuthentication } from '@/lib/auth-helpers';
 import { revalidatePath } from 'next/cache';
 import { OWNER_ROLES } from '@/lib/owner-role';
+import { BenchmarkLogger } from '@/lib/benchmark';
 
 // ユーザー検索のServer Action
 export async function searchUserByEmail(email: string, excludeUserId?: string) {
@@ -44,8 +45,14 @@ export async function searchUserByEmail(email: string, excludeUserId?: string) {
 
 export async function createEvent(formData: FormData) {
   try {
+    // 全体の処理時間計測開始
+    BenchmarkLogger.start('CreateEvent_Total');
+    
     // 認証確認とユーザー情報取得
-    const { dbUser: currentUser } = await requireAuthentication();
+    const { dbUser: currentUser } = await BenchmarkLogger.measure(
+      'CreateEvent_RequireAuth',
+      () => requireAuthentication()
+    );
 
     // フォームデータを取得
     const title = formData.get('title') as string;
@@ -81,24 +88,31 @@ export async function createEvent(formData: FormData) {
 
     // 指定されたオーナーIDが全て有効か確認
     if (ownerIds.length > 0) {
-      const validOwners = await prisma.user.findMany({
-        where: {
-          id: {
-            in: ownerIds
+      const validOwners = await BenchmarkLogger.measure(
+        'CreateEvent_ValidateOwners',
+        () => prisma.user.findMany({
+          where: {
+            id: {
+              in: ownerIds
+            }
+          },
+          select: {
+            id: true
           }
-        },
-        select: {
-          id: true
-        }
-      });
+        }),
+        { ownerCount: ownerIds.length }
+      );
 
       if (validOwners.length !== ownerIds.length) {
+        BenchmarkLogger.end('CreateEvent_Total', { error: 'Invalid owner IDs' });
         throw new Error('無効なオーナーIDが含まれています');
       }
     }
 
     // トランザクションでイベントとオーナー関係を作成
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await BenchmarkLogger.measure(
+      'CreateEvent_Transaction',
+      () => prisma.$transaction(async (tx) => {
       // イベントを作成
       const event = await tx.event.create({
         data: {
@@ -122,17 +136,34 @@ export async function createEvent(formData: FormData) {
       }
 
       return event;
-    });
+    }),
+      { title: sanitizedTitle, ownerCount: ownerIds.length }
+    );
 
     // キャッシュを無効化
-    revalidatePath('/events');
-    revalidatePath(`/events/${result.id}`);
+    BenchmarkLogger.measureSync(
+      'CreateEvent_RevalidateCache',
+      () => {
+        revalidatePath('/events');
+        revalidatePath(`/events/${result.id}`);
+      },
+      { eventId: result.id }
+    );
+
+    // 全体の処理時間計測終了
+    BenchmarkLogger.end('CreateEvent_Total', {
+      eventId: result.id,
+      title: sanitizedTitle,
+      ownerCount: ownerIds.length,
+      attendance
+    });
 
     // 作成したイベントページにリダイレクト
     redirect(`/events/${result.id}`);
 
   } catch (error: any) {
     console.error('イベント作成エラー:', error);
+    BenchmarkLogger.end('CreateEvent_Total', { error: error.message });
     throw error;
   }
 }

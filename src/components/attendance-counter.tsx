@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { updateAttendance } from '@/app/events/_actions/event.actions';
+import { updateAttendance } from '@/app/events/_actions/event.action';
 import { UserCheck, Plus, Loader2 } from 'lucide-react';
 import type { AttendanceCounterProps } from '@/types/events';
 import { UI_CONSTANTS, cn, createButtonClasses, createTypographyClasses } from '@/lib/ui-constants';

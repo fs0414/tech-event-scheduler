@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { searchUserByEmailAuth } from '@/app/events/_actions/user.actions';
-import { addOrganizer } from '@/app/events/_actions/owner.actions';
+import { searchUserByEmailAuth } from '@/app/events/_actions/user.action';
+import { addOrganizer } from '@/app/events/_actions/owner.action';
 import { Search, Crown, Loader2, X, UserPlus } from 'lucide-react';
 import { UI_CONSTANTS, cn, createButtonClasses, createCardClasses, createTypographyClasses } from '@/lib/ui-constants';
 
