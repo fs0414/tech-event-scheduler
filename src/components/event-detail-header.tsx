@@ -78,7 +78,7 @@ export default function EventDetailHeader({
                   rel="noopener noreferrer"
                 >
                   <ExternalLink className="h-4 w-4" />
-                  <span className="hidden sm:inline">イベントページ</span>
+                  <span className="hidden sm:inline">外部ページ</span>
                   <span className="sm:hidden">詳細</span>
                 </a>
               </Button>

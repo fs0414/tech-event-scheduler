@@ -158,7 +158,7 @@ export default function EventTimerManager({ event, currentUser, isOwner }: Event
         </CardContent>
       </Card>
 
-      {/* セッション追加（オーナーのみ） */}
+      {/* セッション追加（管理者のみ） */}
       {isOwner && (
         <Card className={createCardClasses('soft')}>
           <CardHeader>
@@ -212,7 +212,7 @@ export default function EventTimerManager({ event, currentUser, isOwner }: Event
               <p className={createTypographyClasses('s', 'regular', 'secondary')}>
                 {isOwner 
                   ? '上のフォームから最初のセッションを追加しましょう' 
-                  : 'オーナーがセッションを追加するまでお待ちください'}
+                  : '管理者がセッションを追加するまでお待ちください'}
               </p>
             </CardContent>
           </Card>

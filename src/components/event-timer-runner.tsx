@@ -205,7 +205,13 @@ export default function EventTimerRunner({ timers, currentUser }: EventTimerRunn
             <CardTitle className={createTypographyClasses('l', 'bold', 'muted')}>
               セッション {currentTimer?.sequence || 1}
             </CardTitle>
-            <Badge className={cn("text-white", getStateColor(), "bg-current")}>
+            <Badge className={cn(
+              "font-medium",
+              timerState === 'running' && "bg-[#16a34a] text-white",
+              timerState === 'paused' && "bg-[#eab308] text-white", 
+              timerState === 'finished' && "bg-[#dc2626] text-white",
+              timerState === 'idle' && "bg-gray-500 text-white"
+            )}>
               {getStateText()}
             </Badge>
           </div>
@@ -302,11 +308,11 @@ export default function EventTimerRunner({ timers, currentUser }: EventTimerRunn
         </CardContent>
       </Card>
 
-      {/* セッション一覧 */}
+      {/* Current セッション */}
       <Card className={createCardClasses('soft')}>
         <CardHeader>
           <CardTitle className={createTypographyClasses('m', 'bold', 'muted')}>
-            セッション一覧
+            Current
           </CardTitle>
         </CardHeader>
         <CardContent>

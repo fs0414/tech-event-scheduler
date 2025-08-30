@@ -75,7 +75,7 @@ export default function EventDetailTabs({ event, currentUser, isOwner }: EventDe
             className={createTabsTriggerClasses(activeTab === 'participants', 'primary')}
           >
             <Users className="h-4 w-4" />
-            <span className="hidden sm:inline">参加者</span>
+            <span className="hidden sm:inline">管理者</span>
             <span className="sm:hidden">参加</span>
           </TabsTrigger>
           <TabsTrigger 
@@ -102,7 +102,7 @@ export default function EventDetailTabs({ event, currentUser, isOwner }: EventDe
           <CardHeader>
             <div className="flex justify-between items-center">
               <CardTitle className={createTypographyClasses('l', 'bold', 'primary')}>
-                オーナー ({eventOwners.length})
+                管理者 ({eventOwners.length})
               </CardTitle>
               {isOwner && !showAddOrganizerForm && (
                 <Button
@@ -111,7 +111,7 @@ export default function EventDetailTabs({ event, currentUser, isOwner }: EventDe
                   className={cn(createButtonClasses('secondary', 'small'), "gap-2")}
                 >
                   <UserPlus className="h-4 w-4" />
-                  <span className="hidden sm:inline">オーナーを追加</span>
+                  <span className="hidden sm:inline">管理者を追加</span>
                   <span className="sm:hidden">追加</span>
                 </Button>
               )}

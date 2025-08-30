@@ -44,7 +44,7 @@ export default function EventsList({ events }: EventsListProps) {
                       UI_CONSTANTS.colors.mutedText,
                       "hover:text-primary hover:bg-primary/10"
                     )}
-                    aria-label="イベントページを開く"
+                    aria-label="外部ページを開く"
                   >
                     <ExternalLink className="h-4 w-4" />
                   </a>
@@ -78,7 +78,7 @@ export default function EventsList({ events }: EventsListProps) {
                     {event.owners?.length || 0}人
                   </div>
                   <div className={createTypographyClasses('xs', 'regular', 'muted')}>
-                    オーナー
+                    管理者
                   </div>
                 </div>
               </div>
@@ -88,7 +88,7 @@ export default function EventsList({ events }: EventsListProps) {
             {event.owners && event.owners.length > 0 && (
               <div>
                 <div className={cn("mb-2", createTypographyClasses('xs', 'medium', 'muted'))}>
-                  オーナー
+                  管理者
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {event.owners.slice(0, 3).map((owner) => (
