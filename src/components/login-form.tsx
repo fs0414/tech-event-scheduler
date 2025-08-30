@@ -72,13 +72,13 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
               "w-full flex items-center justify-center",
               UI_CONSTANTS.spacing.gap,
               UI_CONSTANTS.buttons.large,
-              UI_CONSTANTS.colors.cardBg,
+              "bg-gray-50",
               UI_CONSTANTS.colors.border,
               UI_CONSTANTS.radius.button,
               UI_CONSTANTS.transitions.default,
               UI_CONSTANTS.states.focus,
               createTypographyClasses('m', 'medium', 'body'),
-              "hover:bg-gray-50 hover:border-gray-400",
+              "hover:bg-gray-100 hover:border-gray-400",
               "disabled:opacity-50 disabled:cursor-not-allowed"
             )}
           >

@@ -55,25 +55,6 @@ function LoginPageContentWithAuth() {
   return (
     <div className={cn("min-h-screen flex items-center justify-center", UI_CONSTANTS.colors.pageBg)}>
       <div className="w-full max-w-md px-6">
-        {/* Logo and Title */}
-        <div className={cn("text-center", UI_CONSTANTS.spacing.marginBottom)}>
-          <div className={cn(
-            "mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-4 shadow-lg",
-            UI_CONSTANTS.colors.primary,
-            UI_CONSTANTS.transitions.default
-          )}>
-            <span className={cn(createTypographyClasses('xl', 'bold', 'body'))}>
-              T
-            </span>
-          </div>
-          <h1 className={cn(createTypographyClasses('xxl', 'bold', 'body'), "mb-2")}>
-            テクスケ
-          </h1>
-          <p className={cn(createTypographyClasses('m', 'regular', 'muted'))}>
-            技術イベントスケジューラー
-          </p>
-        </div>
-
         {/* Login Card */}
         <div className={cn(
           createCardClasses('default'),
@@ -82,10 +63,10 @@ function LoginPageContentWithAuth() {
         )}>
           <div className={cn(UI_CONSTANTS.spacing.marginBottom)}>
             <h2 className={cn(createTypographyClasses('xl', 'semibold', 'body'), "mb-2")}>
-              ようこそ
+              tech event scheduler
             </h2>
             <p className={cn(createTypographyClasses('s', 'regular', 'muted'))}>
-              Googleアカウントでログインして開始
+              Googleアカウントでログイン
             </p>
           </div>
 
@@ -113,7 +94,7 @@ function LoginPageContentWithAuth() {
           "text-center mt-8",
           createTypographyClasses('xxs', 'regular', 'muted')
         )}>
-          © 2024 テクスケ. All rights reserved.
+          © 2025 テクスケ. All rights reserved.
         </p>
       </div>
     </div>
