@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import EventsList from "@/components/events-list";
 import EventsPageHeader from "@/components/events-page-header";
-import EventsStats from "@/components/events-stats";
 import { getCurrentUserWithAutoCreate } from "@/lib/auth-helpers";
 import { getEventStats, getEventsForUser } from "@/lib/data";
 import { cn, UI_CONSTANTS } from "@/lib/ui-constants";
