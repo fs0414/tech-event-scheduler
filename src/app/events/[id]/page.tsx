@@ -1,17 +1,18 @@
-import { notFound } from 'next/navigation';
-import { getCurrentUserForPage } from '@/lib/auth-helpers';
-import { getEventWithOwnership } from '@/lib/data';
-import EventDetailClient from '@/components/event-detail-client';
-
+import { notFound } from "next/navigation";
+import EventDetailClient from "@/components/event-detail-client";
+import { getCurrentUserForPage } from "@/lib/auth-helpers";
+import { getEventWithOwnership } from "@/lib/data";
 
 interface EventDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function EventDetailPage({ params }: EventDetailPageProps) {
+export default async function EventDetailPage({
+  params,
+}: EventDetailPageProps) {
   const { id } = await params;
   const eventId = parseInt(id);
-  
+
   if (isNaN(eventId)) {
     notFound();
   }
@@ -28,5 +29,11 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
 
   const { event, isOwner } = eventData;
 
-  return <EventDetailClient event={event} currentUser={currentUser} isOwner={isOwner} />;
+  return (
+    <EventDetailClient
+      event={event}
+      currentUser={currentUser}
+      isOwner={isOwner}
+    />
+  );
 }

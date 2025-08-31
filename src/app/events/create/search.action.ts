@@ -1,7 +1,7 @@
-'use server';
+"use server";
 
-import { prisma } from '@/lib/prisma';
-import { requireAuthentication } from '@/lib/auth-helpers';
+import { requireAuthentication } from "@/lib/auth-helpers";
+import { prisma } from "@/lib/prisma";
 
 export async function searchUserByEmail(email: string) {
   try {
@@ -9,7 +9,7 @@ export async function searchUserByEmail(email: string) {
     const { dbUser: currentUser } = await requireAuthentication();
 
     const sanitizedEmail = email.toLowerCase().trim();
-    
+
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(sanitizedEmail)) {
       return null;
@@ -21,8 +21,8 @@ export async function searchUserByEmail(email: string) {
       select: {
         id: true,
         name: true,
-        email: true
-      }
+        email: true,
+      },
     });
 
     // 自分自身の場合はnullを返す
@@ -31,9 +31,8 @@ export async function searchUserByEmail(email: string) {
     }
 
     return foundUser;
-
   } catch (error: any) {
-    console.error('ユーザー検索エラー:', error);
+    console.error("ユーザー検索エラー:", error);
     throw error;
   }
 }

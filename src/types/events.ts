@@ -1,4 +1,11 @@
-import type { Event, User, Owner, Speaker, Article, Timer } from '@prisma/client';
+import type {
+  Article,
+  Event,
+  Owner,
+  Speaker,
+  Timer,
+  User,
+} from "@prisma/client";
 
 // Prismaのそのままの型を使用
 export type EventWithDetails = Event & {
@@ -21,12 +28,12 @@ export type EventWithOwners = Event & {
 export interface EventDetailClientProps {
   event: EventWithDetails;
   currentUser?: User | null;
-  auth?: import('@/types/auth').AuthContextType; // テスト時の依存性注入用
+  auth?: import("@/types/auth").AuthContextType; // テスト時の依存性注入用
 }
 
 export interface EventCreateClientProps {
   currentUser: User;
-  allUsers: Pick<User, 'id' | 'name' | 'email'>[];
+  allUsers: Pick<User, "id" | "name" | "email">[];
 }
 
 export interface AttendanceCounterProps {
@@ -38,10 +45,10 @@ export interface AttendanceCounterProps {
 // イベント一覧用の軽量型
 export type EventForList = Event & {
   owners: (Owner & {
-    user: Pick<User, 'id' | 'name' | 'email'>;
+    user: Pick<User, "id" | "name" | "email">;
   })[];
   speakers?: (Speaker & {
-    user: Pick<User, 'id' | 'name' | 'email'>;
+    user: Pick<User, "id" | "name" | "email">;
     article: Article | null;
   })[];
   timers?: Timer[];

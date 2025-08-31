@@ -1,11 +1,14 @@
-'use server';
+"use server";
 
-import { revalidatePath } from 'next/cache';
-import { prisma } from '@/lib/prisma';
-import { requireAuthentication } from '@/lib/auth-helpers';
+import { revalidatePath } from "next/cache";
+import { requireAuthentication } from "@/lib/auth-helpers";
+import { prisma } from "@/lib/prisma";
 
 // タイマーセッションを追加
-export async function addTimerSession(eventId: number, durationMinutes: number) {
+export async function addTimerSession(
+  eventId: number,
+  durationMinutes: number,
+) {
   try {
     const { dbUser: currentUser } = await requireAuthentication();
 
@@ -13,18 +16,18 @@ export async function addTimerSession(eventId: number, durationMinutes: number) 
     const isOwner = await prisma.owner.findFirst({
       where: {
         eventId,
-        userId: currentUser.id
-      }
+        userId: currentUser.id,
+      },
     });
 
     if (!isOwner) {
-      throw new Error('このイベントのタイマーを編集する権限がありません');
+      throw new Error("このイベントのタイマーを編集する権限がありません");
     }
 
     // 次のsequence番号を取得
     const lastTimer = await prisma.timer.findFirst({
       where: { eventId },
-      orderBy: { sequence: 'desc' }
+      orderBy: { sequence: "desc" },
     });
 
     const nextSequence = lastTimer ? lastTimer.sequence + 1 : 1;
@@ -34,49 +37,54 @@ export async function addTimerSession(eventId: number, durationMinutes: number) 
       data: {
         eventId,
         durationMinutes,
-        sequence: nextSequence
-      }
+        sequence: nextSequence,
+      },
     });
 
     revalidatePath(`/events/${eventId}`);
     return { success: true, timer };
   } catch (error) {
-    console.error('Timer creation error:', error);
+    console.error("Timer creation error:", error);
     throw error;
   }
 }
 
 // タイマーセッションを更新
-export async function updateTimerSession(timerId: number, durationMinutes: number) {
+export async function updateTimerSession(
+  timerId: number,
+  durationMinutes: number,
+) {
   try {
     const { dbUser: currentUser } = await requireAuthentication();
 
     // タイマーとイベント情報を取得
     const timer = await prisma.timer.findUnique({
       where: { id: timerId },
-      include: { event: { include: { owners: true } } }
+      include: { event: { include: { owners: true } } },
     });
 
     if (!timer) {
-      throw new Error('タイマーが見つかりません');
+      throw new Error("タイマーが見つかりません");
     }
 
     // 現在のユーザーがイベントのオーナーかチェック
-    const isOwner = timer.event.owners.some(owner => owner.userId === currentUser.id);
+    const isOwner = timer.event.owners.some(
+      (owner) => owner.userId === currentUser.id,
+    );
     if (!isOwner) {
-      throw new Error('このタイマーを編集する権限がありません');
+      throw new Error("このタイマーを編集する権限がありません");
     }
 
     // タイマーを更新
     const updatedTimer = await prisma.timer.update({
       where: { id: timerId },
-      data: { durationMinutes }
+      data: { durationMinutes },
     });
 
     revalidatePath(`/events/${timer.eventId}`);
     return { success: true, timer: updatedTimer };
   } catch (error) {
-    console.error('Timer update error:', error);
+    console.error("Timer update error:", error);
     throw error;
   }
 }
@@ -89,51 +97,56 @@ export async function deleteTimerSession(timerId: number) {
     // タイマーとイベント情報を取得
     const timer = await prisma.timer.findUnique({
       where: { id: timerId },
-      include: { event: { include: { owners: true } } }
+      include: { event: { include: { owners: true } } },
     });
 
     if (!timer) {
-      throw new Error('タイマーが見つかりません');
+      throw new Error("タイマーが見つかりません");
     }
 
     // 現在のユーザーがイベントのオーナーかチェック
-    const isOwner = timer.event.owners.some(owner => owner.userId === currentUser.id);
+    const isOwner = timer.event.owners.some(
+      (owner) => owner.userId === currentUser.id,
+    );
     if (!isOwner) {
-      throw new Error('このタイマーを削除する権限がありません');
+      throw new Error("このタイマーを削除する権限がありません");
     }
 
     const eventId = timer.eventId;
 
     // タイマーを削除
     await prisma.timer.delete({
-      where: { id: timerId }
+      where: { id: timerId },
     });
 
     // sequence番号を再調整
     const remainingTimers = await prisma.timer.findMany({
       where: { eventId },
-      orderBy: { sequence: 'asc' }
+      orderBy: { sequence: "asc" },
     });
 
     await prisma.$transaction(
       remainingTimers.map((t, index) =>
         prisma.timer.update({
           where: { id: t.id },
-          data: { sequence: index + 1 }
-        })
-      )
+          data: { sequence: index + 1 },
+        }),
+      ),
     );
 
     revalidatePath(`/events/${eventId}`);
     return { success: true };
   } catch (error) {
-    console.error('Timer deletion error:', error);
+    console.error("Timer deletion error:", error);
     throw error;
   }
 }
 
 // タイマーの順序を変更
-export async function reorderTimerSessions(eventId: number, timerIds: number[]) {
+export async function reorderTimerSessions(
+  eventId: number,
+  timerIds: number[],
+) {
   try {
     const { dbUser: currentUser } = await requireAuthentication();
 
@@ -141,12 +154,12 @@ export async function reorderTimerSessions(eventId: number, timerIds: number[]) 
     const isOwner = await prisma.owner.findFirst({
       where: {
         eventId,
-        userId: currentUser.id
-      }
+        userId: currentUser.id,
+      },
     });
 
     if (!isOwner) {
-      throw new Error('このイベントのタイマー順序を変更する権限がありません');
+      throw new Error("このイベントのタイマー順序を変更する権限がありません");
     }
 
     // タイマーの順序を更新
@@ -154,15 +167,15 @@ export async function reorderTimerSessions(eventId: number, timerIds: number[]) 
       timerIds.map((timerId, index) =>
         prisma.timer.update({
           where: { id: timerId },
-          data: { sequence: index + 1 }
-        })
-      )
+          data: { sequence: index + 1 },
+        }),
+      ),
     );
 
     revalidatePath(`/events/${eventId}`);
     return { success: true };
   } catch (error) {
-    console.error('Timer reorder error:', error);
+    console.error("Timer reorder error:", error);
     throw error;
   }
 }

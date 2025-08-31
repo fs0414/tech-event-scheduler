@@ -1,4 +1,4 @@
-import { Temporal } from 'temporal-polyfill';
+import type { Temporal } from "temporal-polyfill";
 
 // Temporal型のエイリアス
 export type PlainDateTime = Temporal.PlainDateTime;
@@ -22,7 +22,7 @@ export interface PrismaTimestampFields {
 export interface DateTimeFormatOptions {
   includeTime?: boolean;
   includeSeconds?: boolean;
-  format?: 'full' | 'short' | 'medium';
+  format?: "full" | "short" | "medium";
 }
 
 // タイムゾーン設定

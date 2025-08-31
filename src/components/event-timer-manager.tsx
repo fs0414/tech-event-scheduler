@@ -1,15 +1,25 @@
-'use client';
+"use client";
 
-import { useState, useTransition } from 'react';
-import { Timer, Event, User } from '@prisma/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Plus, Clock, Trash2, GripVertical, Loader2 } from 'lucide-react';
-import { UI_CONSTANTS, cn, createButtonClasses, createCardClasses, createTypographyClasses } from '@/lib/ui-constants';
-import { addTimerSession, updateTimerSession, deleteTimerSession, reorderTimerSessions } from '@/app/events/_actions/timer.action';
+import type { Event, Timer, User } from "@prisma/client";
+import { Clock, GripVertical, Loader2, Plus, Trash2 } from "lucide-react";
+import { useState, useTransition } from "react";
+import {
+  addTimerSession,
+  deleteTimerSession,
+  updateTimerSession,
+} from "@/app/events/_actions/timer.action";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  cn,
+  createButtonClasses,
+  createCardClasses,
+  createTypographyClasses,
+  UI_CONSTANTS,
+} from "@/lib/ui-constants";
 
 interface EventTimerManagerProps {
   event: Event & {
@@ -23,20 +33,24 @@ interface EventTimerManagerProps {
   isOwner: boolean;
 }
 
-export default function EventTimerManager({ event, currentUser, isOwner }: EventTimerManagerProps) {
+export default function EventTimerManager({
+  event,
+  currentUser,
+  isOwner,
+}: EventTimerManagerProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [newSessionDuration, setNewSessionDuration] = useState<number>(15);
   const [editingTimer, setEditingTimer] = useState<number | null>(null);
   const [editDuration, setEditDuration] = useState<number>(0);
 
-
-  // タイマーをsequence順にソート
-  const sortedTimers = [...event.timers].sort((a, b) => a.sequence - b.sequence);
+  const sortedTimers = [...event.timers].sort(
+    (a, b) => a.sequence - b.sequence,
+  );
 
   const handleAddSession = () => {
     if (!newSessionDuration || newSessionDuration <= 0) {
-      setError('セッション時間は1分以上で入力してください');
+      setError("セッション時間は1分以上で入力してください");
       return;
     }
 
@@ -46,14 +60,16 @@ export default function EventTimerManager({ event, currentUser, isOwner }: Event
         await addTimerSession(event.id, isOwner, newSessionDuration);
         setNewSessionDuration(15); // デフォルトに戻す
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'セッションの追加に失敗しました');
+        setError(
+          err instanceof Error ? err.message : "セッションの追加に失敗しました",
+        );
       }
     });
   };
 
   const handleUpdateSession = (timerId: number) => {
     if (!editDuration || editDuration <= 0) {
-      setError('セッション時間は1分以上で入力してください');
+      setError("セッション時間は1分以上で入力してください");
       return;
     }
 
@@ -63,13 +79,15 @@ export default function EventTimerManager({ event, currentUser, isOwner }: Event
         await updateTimerSession(timerId, isOwner, editDuration);
         setEditingTimer(null);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'セッションの更新に失敗しました');
+        setError(
+          err instanceof Error ? err.message : "セッションの更新に失敗しました",
+        );
       }
     });
   };
 
   const handleDeleteSession = (timerId: number) => {
-    if (!confirm('このセッションを削除してもよろしいですか？')) {
+    if (!confirm("このセッションを削除してもよろしいですか？")) {
       return;
     }
 
@@ -78,7 +96,9 @@ export default function EventTimerManager({ event, currentUser, isOwner }: Event
         setError(null);
         await deleteTimerSession(timerId, isOwner);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'セッションの削除に失敗しました');
+        setError(
+          err instanceof Error ? err.message : "セッションの削除に失敗しました",
+        );
       }
     });
   };
@@ -94,7 +114,10 @@ export default function EventTimerManager({ event, currentUser, isOwner }: Event
   };
 
   const getTotalDuration = () => {
-    return sortedTimers.reduce((total, timer) => total + timer.durationMinutes, 0);
+    return sortedTimers.reduce(
+      (total, timer) => total + timer.durationMinutes,
+      0,
+    );
   };
 
   const formatDuration = (minutes: number) => {
@@ -108,9 +131,9 @@ export default function EventTimerManager({ event, currentUser, isOwner }: Event
 
   if (!currentUser) {
     return (
-      <Card className={createCardClasses('mist')}>
+      <Card className={createCardClasses("mist")}>
         <CardContent className="p-6 text-center">
-          <p className={createTypographyClasses('m', 'regular', 'secondary')}>
+          <p className={createTypographyClasses("m", "regular", "secondary")}>
             タイマー機能を使用するにはログインしてください
           </p>
         </CardContent>
@@ -123,46 +146,21 @@ export default function EventTimerManager({ event, currentUser, isOwner }: Event
       {/* エラー表示 */}
       {error && (
         <Alert variant="destructive">
-          <AlertDescription className={createTypographyClasses('s', 'regular', 'body')}>
+          <AlertDescription
+            className={createTypographyClasses("s", "regular", "body")}
+          >
             {error}
           </AlertDescription>
         </Alert>
       )}
 
-      {/* サマリーカード */}
-      <Card className={createCardClasses('glacier')}>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={cn(
-                "w-12 h-12 rounded-lg flex items-center justify-center",
-                "bg-gradient-to-br from-[#00c4cc] to-[#0891b2]"
-              )}>
-                <Clock className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h3 className={createTypographyClasses('l', 'bold', 'muted')}>
-                  タイマーセッション
-                </h3>
-                <p className={createTypographyClasses('s', 'regular', 'secondary')}>
-                  {sortedTimers.length}セッション・総時間{formatDuration(getTotalDuration())}
-                </p>
-              </div>
-            </div>
-            {sortedTimers.length > 0 && (
-              <Badge className="bg-[#00c4cc] text-white">
-                {sortedTimers.length}個
-              </Badge>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
       {/* セッション追加（管理者のみ） */}
       {isOwner && (
-        <Card className={createCardClasses('soft')}>
+        <Card className={createCardClasses("soft")}>
           <CardHeader>
-            <CardTitle className={createTypographyClasses('m', 'bold', 'muted')}>
+            <CardTitle
+              className={createTypographyClasses("m", "bold", "muted")}
+            >
               新しいセッションを追加
             </CardTitle>
           </CardHeader>
@@ -173,7 +171,9 @@ export default function EventTimerManager({ event, currentUser, isOwner }: Event
                   type="number"
                   placeholder="分"
                   value={newSessionDuration}
-                  onChange={(e) => setNewSessionDuration(parseInt(e.target.value) || 0)}
+                  onChange={(e) =>
+                    setNewSessionDuration(parseInt(e.target.value) || 0)
+                  }
                   min="1"
                   max="300"
                 />
@@ -182,8 +182,8 @@ export default function EventTimerManager({ event, currentUser, isOwner }: Event
                 onClick={handleAddSession}
                 disabled={isPending}
                 className={cn(
-                  createButtonClasses('primary', 'medium'),
-                  UI_CONSTANTS.transitions.default
+                  createButtonClasses("primary", "medium"),
+                  UI_CONSTANTS.transitions.default,
                 )}
               >
                 {isPending ? (
@@ -191,7 +191,9 @@ export default function EventTimerManager({ event, currentUser, isOwner }: Event
                 ) : (
                   <Plus className="h-4 w-4 mr-2" />
                 )}
-                <span className={createTypographyClasses('s', 'medium', 'body')}>
+                <span
+                  className={createTypographyClasses("s", "medium", "body")}
+                >
                   追加
                 </span>
               </Button>
@@ -203,26 +205,28 @@ export default function EventTimerManager({ event, currentUser, isOwner }: Event
       {/* セッションリスト */}
       <div className="space-y-3">
         {sortedTimers.length === 0 ? (
-          <Card className={createCardClasses('mist')}>
+          <Card className={createCardClasses("mist")}>
             <CardContent className="p-6 text-center">
               <Clock className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-              <p className={createTypographyClasses('m', 'medium', 'muted')}>
+              <p className={createTypographyClasses("m", "medium", "muted")}>
                 まだタイマーセッションがありません
               </p>
-              <p className={createTypographyClasses('s', 'regular', 'secondary')}>
-                {isOwner 
-                  ? '上のフォームから最初のセッションを追加しましょう' 
-                  : '管理者がセッションを追加するまでお待ちください'}
+              <p
+                className={createTypographyClasses("s", "regular", "secondary")}
+              >
+                {isOwner
+                  ? "上のフォームから最初のセッションを追加しましょう"
+                  : "管理者がセッションを追加するまでお待ちください"}
               </p>
             </CardContent>
           </Card>
         ) : (
           sortedTimers.map((timer, index) => (
-            <Card 
-              key={timer.id} 
+            <Card
+              key={timer.id}
               className={cn(
-                createCardClasses('glacier'),
-                "border-l-4 border-l-[#00c4cc]"
+                createCardClasses("glacier"),
+                "border-l-4 border-l-[#00c4cc]",
               )}
             >
               <CardContent className="p-4">
@@ -231,7 +235,10 @@ export default function EventTimerManager({ event, currentUser, isOwner }: Event
                     {isOwner && (
                       <GripVertical className="h-4 w-4 text-gray-400 cursor-grab" />
                     )}
-                    <Badge variant="outline" className="bg-[#f0fdff] border-[#00c4cc] text-[#00c4cc]">
+                    <Badge
+                      variant="outline"
+                      className="bg-[#f0fdff] border-[#00c4cc] text-[#00c4cc]"
+                    >
                       セッション {timer.sequence}
                     </Badge>
                     <div>
@@ -240,17 +247,27 @@ export default function EventTimerManager({ event, currentUser, isOwner }: Event
                           <Input
                             type="number"
                             value={editDuration}
-                            onChange={(e) => setEditDuration(parseInt(e.target.value) || 0)}
+                            onChange={(e) =>
+                              setEditDuration(parseInt(e.target.value) || 0)
+                            }
                             className="w-20"
                             min="1"
                             max="300"
                           />
-                          <span className={createTypographyClasses('s', 'regular', 'muted')}>分</span>
+                          <span
+                            className={createTypographyClasses(
+                              "s",
+                              "regular",
+                              "muted",
+                            )}
+                          >
+                            分
+                          </span>
                           <Button
                             size="sm"
                             onClick={() => handleUpdateSession(timer.id)}
                             disabled={isPending}
-                            className={createButtonClasses('success', 'small')}
+                            className={createButtonClasses("success", "small")}
                           >
                             保存
                           </Button>
@@ -265,7 +282,13 @@ export default function EventTimerManager({ event, currentUser, isOwner }: Event
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">
-                          <span className={createTypographyClasses('m', 'bold', 'muted')}>
+                          <span
+                            className={createTypographyClasses(
+                              "m",
+                              "bold",
+                              "muted",
+                            )}
+                          >
                             {formatDuration(timer.durationMinutes)}
                           </span>
                           {isOwner && (
@@ -283,7 +306,7 @@ export default function EventTimerManager({ event, currentUser, isOwner }: Event
                       )}
                     </div>
                   </div>
-                  
+
                   {isOwner && editingTimer !== timer.id && (
                     <Button
                       size="sm"

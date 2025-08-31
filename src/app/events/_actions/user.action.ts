@@ -1,12 +1,12 @@
-'use server';
+"use server";
 
-import { prisma } from '@/lib/prisma';
-import { requireAuthentication } from '@/lib/auth-helpers';
-import { 
+import { requireAuthentication } from "@/lib/auth-helpers";
+import { prisma } from "@/lib/prisma";
+import {
+  type SearchUserInput,
   searchUserSchema,
   validateSearchUser,
-  type SearchUserInput
-} from '@/lib/validations/user';
+} from "@/lib/validations/user";
 
 // メールアドレスでユーザーを検索（共通処理）
 export async function searchUserByEmail(email: string, excludeUserId?: string) {
@@ -14,14 +14,15 @@ export async function searchUserByEmail(email: string, excludeUserId?: string) {
     // Zodスキーマでバリデーション
     const validationResult = searchUserSchema.safeParse({
       email,
-      excludeUserId
+      excludeUserId,
     });
-    
+
     if (!validationResult.success) {
       return { user: null, error: null };
     }
 
-    const { email: validEmail, excludeUserId: validExcludeUserId } = validationResult.data;
+    const { email: validEmail, excludeUserId: validExcludeUserId } =
+      validationResult.data;
 
     // メールアドレスの完全一致でユーザーを検索
     const user = await prisma.user.findUnique({
@@ -47,8 +48,8 @@ export async function searchUserByEmail(email: string, excludeUserId?: string) {
 
     return { user, error: null };
   } catch (error) {
-    console.error('User search error:', error);
-    return { user: null, error: '検索中にエラーが発生しました' };
+    console.error("User search error:", error);
+    return { user: null, error: "検索中にエラーが発生しました" };
   }
 }
 
@@ -60,12 +61,15 @@ export async function searchUserByEmailAuth(email: string) {
     // Zodスキーマでバリデーション
     const validationResult = searchUserSchema.safeParse({
       email,
-      excludeUserId: currentUser.id
+      excludeUserId: currentUser.id,
     });
-    
+
     if (!validationResult.success) {
       const firstError = validationResult.error.issues[0];
-      return { user: null, error: firstError?.message || 'メールアドレスが無効です' };
+      return {
+        user: null,
+        error: firstError?.message || "メールアドレスが無効です",
+      };
     }
 
     const { email: validEmail } = validationResult.data;
@@ -76,8 +80,8 @@ export async function searchUserByEmailAuth(email: string) {
       select: {
         id: true,
         name: true,
-        email: true
-      }
+        email: true,
+      },
     });
 
     if (foundUser && foundUser.id === currentUser.id) {
@@ -89,9 +93,8 @@ export async function searchUserByEmailAuth(email: string) {
     }
 
     return { user: foundUser, error: null };
-
   } catch (error: any) {
-    console.error('ユーザー検索エラー:', error);
-    return { user: null, error: '検索中にエラーが発生しました' };
+    console.error("ユーザー検索エラー:", error);
+    return { user: null, error: "検索中にエラーが発生しました" };
   }
 }

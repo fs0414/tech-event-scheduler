@@ -1,19 +1,14 @@
-'use server';
+"use server";
 
-import { redirect } from 'next/navigation';
-import { revalidatePath, revalidateTag } from 'next/cache';
-import { prisma } from '@/lib/prisma';
-import { requireAuthentication } from '@/lib/auth-helpers';
-import { OWNER_ROLES } from '@/lib/owner-role';
-import { 
-  createEventFormSchema, 
+import { revalidatePath, revalidateTag } from "next/cache";
+import { redirect } from "next/navigation";
+import { requireAuthentication } from "@/lib/auth-helpers";
+import { OWNER_ROLES } from "@/lib/owner-role";
+import { prisma } from "@/lib/prisma";
+import {
+  createEventFormSchema,
   updateAttendanceSchema,
-  validateCreateEvent,
-  validateUpdateAttendance,
-  type CreateEventInput,
-  type UpdateAttendanceInput
-} from '@/lib/validations/event';
-import { z } from 'zod';
+} from "@/lib/validations/event";
 
 // イベント作成
 export async function createEvent(formData: FormData) {
@@ -23,17 +18,17 @@ export async function createEvent(formData: FormData) {
 
     // フォームデータを取得・変換
     const rawData = {
-      title: formData.get('title') as string,
-      eventUrl: formData.get('eventUrl') as string,
-      attendance: formData.get('attendance') as string,
-      ownerIds: formData.getAll('ownerIds') as string[]
+      title: formData.get("title") as string,
+      eventUrl: formData.get("eventUrl") as string,
+      attendance: formData.get("attendance") as string,
+      ownerIds: formData.getAll("ownerIds") as string[],
     };
 
     // Zodスキーマでバリデーション
     const validationResult = createEventFormSchema.safeParse(rawData);
     if (!validationResult.success) {
       const firstError = validationResult.error.issues[0];
-      throw new Error(firstError?.message || '入力データが無効です');
+      throw new Error(firstError?.message || "入力データが無効です");
     }
 
     const { title, eventUrl, attendance, ownerIds } = validationResult.data;
@@ -48,16 +43,16 @@ export async function createEvent(formData: FormData) {
       const validOwners = await prisma.user.findMany({
         where: {
           id: {
-            in: ownerIds
-          }
+            in: ownerIds,
+          },
         },
         select: {
-          id: true
-        }
+          id: true,
+        },
       });
 
       if (validOwners.length !== ownerIds.length) {
-        throw new Error('無効なオーナーIDが含まれています');
+        throw new Error("無効なオーナーIDが含まれています");
       }
     }
 
@@ -68,20 +63,21 @@ export async function createEvent(formData: FormData) {
         data: {
           title,
           eventUrl,
-          attendance
-        }
+          attendance,
+        },
       });
 
       // オーナー関係を作成
       if (ownerIds.length > 0) {
-        const ownerData = ownerIds.map(ownerId => ({
+        const ownerData = ownerIds.map((ownerId) => ({
           userId: ownerId,
           eventId: event.id,
-          role: ownerId === currentUser.id ? OWNER_ROLES.ADMIN : OWNER_ROLES.MEMBER
+          role:
+            ownerId === currentUser.id ? OWNER_ROLES.ADMIN : OWNER_ROLES.MEMBER,
         }));
 
         await tx.owner.createMany({
-          data: ownerData
+          data: ownerData,
         });
       }
 
@@ -89,17 +85,16 @@ export async function createEvent(formData: FormData) {
     });
 
     // キャッシュを無効化
-    revalidatePath('/events');
+    revalidatePath("/events");
     revalidatePath(`/events/${result.id}`);
     revalidateTag(`events:user:${currentUser.id}`);
-    revalidateTag('events:list');
+    revalidateTag("events:list");
     revalidateTag(`events:stats:${currentUser.id}`);
 
     // 作成したイベントページにリダイレクト
     redirect(`/events/${result.id}`);
-
   } catch (error: any) {
-    console.error('イベント作成エラー:', error);
+    console.error("イベント作成エラー:", error);
     throw error;
   }
 }
@@ -108,15 +103,15 @@ export async function createEvent(formData: FormData) {
 export async function updateAttendance(eventId: number, newAttendance: number) {
   try {
     const { dbUser: currentUser } = await requireAuthentication();
-    
+
     // Zodスキーマでバリデーション
     const validationResult = updateAttendanceSchema.safeParse({
       eventId,
-      attendance: newAttendance
+      attendance: newAttendance,
     });
     if (!validationResult.success) {
       const firstError = validationResult.error.issues[0];
-      throw new Error(firstError?.message || '入力データが無効です');
+      throw new Error(firstError?.message || "入力データが無効です");
     }
 
     const { eventId: validEventId, attendance } = validationResult.data;
@@ -125,18 +120,18 @@ export async function updateAttendance(eventId: number, newAttendance: number) {
     const isOwner = await prisma.owner.findFirst({
       where: {
         eventId: validEventId,
-        userId: currentUser.id
-      }
+        userId: currentUser.id,
+      },
     });
 
     if (!isOwner) {
-      throw new Error('このイベントの出席者数を更新する権限がありません');
+      throw new Error("このイベントの出席者数を更新する権限がありません");
     }
 
     // 出席者数を更新
     const updatedEvent = await prisma.event.update({
       where: { id: validEventId },
-      data: { attendance }
+      data: { attendance },
     });
 
     revalidatePath(`/events/${validEventId}`);
@@ -145,7 +140,7 @@ export async function updateAttendance(eventId: number, newAttendance: number) {
     revalidateTag(`events:stats:${currentUser.id}`);
     return { success: true, attendance: updatedEvent.attendance };
   } catch (error) {
-    console.error('Attendance update error:', error);
+    console.error("Attendance update error:", error);
     throw error;
   }
 }

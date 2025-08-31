@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import type { EventWithDetails } from '@/types/events';
-import { UI_CONSTANTS, cn } from '@/lib/ui-constants';
-import { OWNER_ROLES } from '@/lib/owner-role';
-import EventDetailHeader from '@/components/event-detail-header';
-import EventDetailTabs from '@/components/event-detail-tabs';
+import EventDetailHeader from "@/components/event-detail-header";
+import EventDetailTabs from "@/components/event-detail-tabs";
+import { OWNER_ROLES } from "@/lib/owner-role";
+import { cn, UI_CONSTANTS } from "@/lib/ui-constants";
+import type { EventWithDetails } from "@/types/events";
 
 interface EventDetailClientProps {
   event: EventWithDetails;
@@ -12,11 +12,19 @@ interface EventDetailClientProps {
   isOwner?: boolean;
 }
 
-export default function EventDetailClient({ event, currentUser, isOwner: propIsOwner }: EventDetailClientProps) {
+export default function EventDetailClient({
+  event,
+  currentUser,
+  isOwner: propIsOwner,
+}: EventDetailClientProps) {
   // isOwnerプロパティが渡されたらそれを使用、なければ従来のロジック
-  const isOwner = propIsOwner ?? (currentUser && event.owners.some(owner => 
-    owner.userId === currentUser.id && owner.role === OWNER_ROLES.ADMIN
-  ));
+  const isOwner =
+    propIsOwner ??
+    (currentUser &&
+      event.owners.some(
+        (owner) =>
+          owner.userId === currentUser.id && owner.role === OWNER_ROLES.ADMIN,
+      ));
 
   return (
     <div className={cn("min-h-screen", UI_CONSTANTS.colors.pageBg)}>
@@ -29,7 +37,7 @@ export default function EventDetailClient({ event, currentUser, isOwner: propIsO
           speakersCount={event.speakers.length}
           timersCount={event.timers.length}
         />
-        
+
         <EventDetailTabs
           event={event}
           currentUser={currentUser}

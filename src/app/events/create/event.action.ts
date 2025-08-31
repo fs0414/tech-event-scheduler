@@ -1,10 +1,10 @@
-'use server';
+"use server";
 
-import { redirect } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
-import { requireAuthentication } from '@/lib/auth-helpers';
-import { revalidatePath } from 'next/cache';
-import { OWNER_ROLES } from '@/lib/owner-role';
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { requireAuthentication } from "@/lib/auth-helpers";
+import { OWNER_ROLES } from "@/lib/owner-role";
+import { prisma } from "@/lib/prisma";
 
 // ユーザー検索のServer Action
 export async function searchUserByEmail(email: string, excludeUserId?: string) {
@@ -37,8 +37,8 @@ export async function searchUserByEmail(email: string, excludeUserId?: string) {
 
     return { user, error: null };
   } catch (error) {
-    console.error('User search error:', error);
-    return { user: null, error: '検索中にエラーが発生しました' };
+    console.error("User search error:", error);
+    return { user: null, error: "検索中にエラーが発生しました" };
   }
 }
 
@@ -48,30 +48,30 @@ export async function createEvent(formData: FormData) {
     const { dbUser: currentUser } = await requireAuthentication();
 
     // フォームデータを取得
-    const title = formData.get('title') as string;
-    const eventUrl = formData.get('eventUrl') as string;
-    const attendance = parseInt(formData.get('attendance') as string) || 0;
-    const ownerIds = formData.getAll('ownerIds') as string[];
+    const title = formData.get("title") as string;
+    const eventUrl = formData.get("eventUrl") as string;
+    const attendance = parseInt(formData.get("attendance") as string) || 0;
+    const ownerIds = formData.getAll("ownerIds") as string[];
 
     const sanitizedTitle = title?.trim();
     if (!sanitizedTitle || sanitizedTitle.length === 0) {
-      throw new Error('イベント名は必須です');
+      throw new Error("イベント名は必須です");
     }
     if (sanitizedTitle.length > 200) {
-      throw new Error('イベント名は200文字以内で入力してください');
+      throw new Error("イベント名は200文字以内で入力してください");
     }
-    
+
     const sanitizedEventUrl = eventUrl?.trim();
     if (sanitizedEventUrl) {
       try {
         new URL(sanitizedEventUrl);
       } catch {
-        throw new Error('無効なURL形式です');
+        throw new Error("無効なURL形式です");
       }
     }
-    
+
     if (!Number.isInteger(attendance) || attendance < 0 || attendance > 10000) {
-      throw new Error('出席者数は0以上10000以下の整数である必要があります');
+      throw new Error("出席者数は0以上10000以下の整数である必要があります");
     }
 
     // 作成者が必ずownerIdsに含まれているか確認
@@ -84,16 +84,16 @@ export async function createEvent(formData: FormData) {
       const validOwners = await prisma.user.findMany({
         where: {
           id: {
-            in: ownerIds
-          }
+            in: ownerIds,
+          },
         },
         select: {
-          id: true
-        }
+          id: true,
+        },
       });
 
       if (validOwners.length !== ownerIds.length) {
-        throw new Error('無効なオーナーIDが含まれています');
+        throw new Error("無効なオーナーIDが含まれています");
       }
     }
 
@@ -104,20 +104,21 @@ export async function createEvent(formData: FormData) {
         data: {
           title: sanitizedTitle,
           eventUrl: sanitizedEventUrl || null,
-          attendance: attendance
-        }
+          attendance: attendance,
+        },
       });
 
       // オーナー関係を作成
       if (ownerIds.length > 0) {
-        const ownerData = ownerIds.map(ownerId => ({
+        const ownerData = ownerIds.map((ownerId) => ({
           userId: ownerId,
           eventId: event.id,
-          role: ownerId === currentUser.id ? OWNER_ROLES.ADMIN : OWNER_ROLES.MEMBER
+          role:
+            ownerId === currentUser.id ? OWNER_ROLES.ADMIN : OWNER_ROLES.MEMBER,
         }));
 
         await tx.owner.createMany({
-          data: ownerData
+          data: ownerData,
         });
       }
 
@@ -125,14 +126,13 @@ export async function createEvent(formData: FormData) {
     });
 
     // キャッシュを無効化
-    revalidatePath('/events');
+    revalidatePath("/events");
     revalidatePath(`/events/${result.id}`);
 
     // 作成したイベントページにリダイレクト
     redirect(`/events/${result.id}`);
-
   } catch (error: any) {
-    console.error('イベント作成エラー:', error);
+    console.error("イベント作成エラー:", error);
     throw error;
   }
 }

@@ -1,32 +1,35 @@
-'use client'
+"use client";
 
-import { useAuth } from '@/app/providers'
-import Link from 'next/link'
-import Image from 'next/image'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { useState } from 'react'
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useAuth } from "@/app/providers";
+import { createClient } from "@/lib/supabase/client";
 
 interface HeaderProps {
-  isPublic?: boolean
+  isPublic?: boolean;
 }
 
 export function Header({ isPublic = false }: HeaderProps) {
-  const { supabaseUser, dbUser } = useAuth()
-  const router = useRouter()
-  const supabase = createClient()
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const { supabaseUser, dbUser } = useAuth();
+  const router = useRouter();
+  const supabase = createClient();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/auth/login')
-  }
+    await supabase.auth.signOut();
+    router.push("/auth/login");
+  };
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
       <div className="container mx-auto px-6 max-w-7xl">
         <div className="flex items-center justify-between h-16">
-          <Link href="/" className="text-xl font-bold text-primary hover:text-primary-hover transition-colors">
+          <Link
+            href="/"
+            className="text-xl font-bold text-primary hover:text-primary-hover transition-colors"
+          >
             テクスケ
           </Link>
 
@@ -38,8 +41,14 @@ export function Header({ isPublic = false }: HeaderProps) {
               >
                 {dbUser?.avatarUrl || supabaseUser.user_metadata.avatar_url ? (
                   <Image
-                    src={dbUser?.avatarUrl || supabaseUser.user_metadata.avatar_url}
-                    alt={dbUser?.name || supabaseUser.user_metadata.full_name || 'User'}
+                    src={
+                      dbUser?.avatarUrl || supabaseUser.user_metadata.avatar_url
+                    }
+                    alt={
+                      dbUser?.name ||
+                      supabaseUser.user_metadata.full_name ||
+                      "User"
+                    }
                     width={32}
                     height={32}
                     className="rounded-lg object-cover"
@@ -47,11 +56,20 @@ export function Header({ isPublic = false }: HeaderProps) {
                 ) : (
                   <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                     <span className="text-white text-sm font-semibold">
-                      {supabaseUser.user_metadata.full_name?.[0] || supabaseUser.email?.[0]?.toUpperCase()}
+                      {supabaseUser.user_metadata.full_name?.[0] ||
+                        supabaseUser.email?.[0]?.toUpperCase()}
                     </span>
                   </div>
                 )}
-                <svg className="w-4 h-4 text-gray-600" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" stroke="currentColor">
+                <svg
+                  className="w-4 h-4 text-gray-600"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
                   <path d="M19 9l-7 7-7-7"></path>
                 </svg>
               </button>
@@ -60,9 +78,13 @@ export function Header({ isPublic = false }: HeaderProps) {
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
                   <div className="px-4 py-2 border-b border-gray-100">
                     <p className="text-sm font-medium text-gray-900">
-                      {dbUser?.name || supabaseUser.user_metadata.full_name || 'ユーザー'}
+                      {dbUser?.name ||
+                        supabaseUser.user_metadata.full_name ||
+                        "ユーザー"}
                     </p>
-                    <p className="text-xs text-gray-500">{supabaseUser.email}</p>
+                    <p className="text-xs text-gray-500">
+                      {supabaseUser.email}
+                    </p>
                   </div>
                   <div className="py-1">
                     <Link
@@ -94,5 +116,5 @@ export function Header({ isPublic = false }: HeaderProps) {
         </div>
       </div>
     </header>
-  )
+  );
 }

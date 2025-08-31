@@ -1,70 +1,83 @@
-'use client'
+"use client";
 
-import { createClient } from '@/lib/supabase/client'
-import { useState } from 'react'
-import { UI_CONSTANTS, cn, createButtonClasses, createTypographyClasses, createCardClasses } from '@/lib/ui-constants'
+import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import {
+  cn,
+  createButtonClasses,
+  createCardClasses,
+  createTypographyClasses,
+  UI_CONSTANTS,
+} from "@/lib/ui-constants";
 
-export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+export function LoginForm({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<"div">) {
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSocialLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const supabase = createClient()
-    setIsLoading(true)
-    setError(null)
+    e.preventDefault();
+    const supabase = createClient();
+    setIsLoading(true);
+    setError(null);
 
     try {
       // 本番環境のURLを明示的に設定
       const getRedirectUrl = () => {
         // Vercel環境変数を使用して正しいURLを取得
-        const vercelUrl = process.env.NEXT_PUBLIC_VERCEL_URL
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
-        
+        const vercelUrl = process.env.NEXT_PUBLIC_VERCEL_URL;
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+
         // 優先順位: SITE_URL > VERCEL_URL > window.location.origin
         if (siteUrl) {
-          return `${siteUrl}/auth/oauth?next=/events`
+          return `${siteUrl}/auth/oauth?next=/events`;
         } else if (vercelUrl) {
-          return `https://${vercelUrl}/auth/oauth?next=/events`
+          return `https://${vercelUrl}/auth/oauth?next=/events`;
         } else {
           // フォールバック：現在のオリジンを使用
-          return `${window.location.origin}/auth/oauth?next=/events`
+          return `${window.location.origin}/auth/oauth?next=/events`;
         }
-      }
+      };
 
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
+        provider: "google",
         options: {
           redirectTo: getRedirectUrl(),
         },
-      })
+      });
 
-      if (error) throw error
+      if (error) throw error;
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : 'An error occurred')
-      setIsLoading(false)
+      setError(error instanceof Error ? error.message : "An error occurred");
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className={cn(className)} {...props}>
       <form onSubmit={handleSocialLogin}>
         <div className={cn(UI_CONSTANTS.spacing.gap, "flex flex-col")}>
           {error && (
-            <div className={cn(
-              createCardClasses('default'),
-              UI_CONSTANTS.spacing.sectionPadding,
-              "border-red-200 bg-red-50"
-            )}>
-              <p className={cn(
-                createTypographyClasses('s', 'regular', 'body'),
-                "text-center text-red-600"
-              )}>
+            <div
+              className={cn(
+                createCardClasses("default"),
+                UI_CONSTANTS.spacing.sectionPadding,
+                "border-red-200 bg-red-50",
+              )}
+            >
+              <p
+                className={cn(
+                  createTypographyClasses("s", "regular", "body"),
+                  "text-center text-red-600",
+                )}
+              >
                 {error}
               </p>
             </div>
           )}
-          
+
           <button
             type="submit"
             disabled={isLoading}
@@ -77,16 +90,35 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
               UI_CONSTANTS.radius.button,
               UI_CONSTANTS.transitions.default,
               UI_CONSTANTS.states.focus,
-              createTypographyClasses('m', 'medium', 'body'),
+              createTypographyClasses("m", "medium", "body"),
               "hover:bg-gray-100 hover:border-gray-400",
-              "disabled:opacity-50 disabled:cursor-not-allowed"
+              "disabled:opacity-50 disabled:cursor-not-allowed",
             )}
           >
             {isLoading ? (
               <>
-                <svg className={cn("animate-spin h-5 w-5", UI_CONSTANTS.colors.mutedText)} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  className={cn(
+                    "animate-spin h-5 w-5",
+                    UI_CONSTANTS.colors.mutedText,
+                  )}
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
                 <span>ログイン中...</span>
               </>
@@ -122,5 +154,5 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
         </div>
       </form>
     </div>
-  )
+  );
 }

@@ -1,5 +1,5 @@
-import { User as SupabaseUser } from "@supabase/supabase-js";
-import { User as PrismaUser } from "@prisma/client";
+import type { User as PrismaUser } from "@prisma/client";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 export interface AuthContextType {
   supabaseUser: SupabaseUser | null;
@@ -19,4 +19,4 @@ export interface PublicUserInfo {
   email: string;
 }
 
-export type SafeUser = Omit<PrismaUser, 'supabaseId'>;
+export type SafeUser = Omit<PrismaUser, "supabaseId">;

@@ -1,9 +1,14 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ExternalLink, Users, Calendar, UserCheck } from 'lucide-react';
-import { UI_CONSTANTS, cn, createCardClasses, createTypographyClasses } from '@/lib/ui-constants';
-import type { EventForList } from '@/types/events';
-import Link from 'next/link';
+import { Calendar, ExternalLink, UserCheck, Users } from "lucide-react";
+import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  cn,
+  createCardClasses,
+  createTypographyClasses,
+  UI_CONSTANTS,
+} from "@/lib/ui-constants";
+import type { EventForList } from "@/types/events";
 
 interface EventsListProps {
   events: EventForList[];
@@ -13,10 +18,15 @@ export default function EventsList({ events }: EventsListProps) {
   if (events.length === 0) {
     return (
       <div className="text-center py-12">
-        <div className={cn("mb-4 text-muted-foreground", createTypographyClasses('l', 'regular', 'muted'))}>
+        <div
+          className={cn(
+            "mb-4 text-muted-foreground",
+            createTypographyClasses("l", "regular", "muted"),
+          )}
+        >
           イベントが見つかりませんでした
         </div>
-        <div className={createTypographyClasses('m', 'regular', 'muted')}>
+        <div className={createTypographyClasses("m", "regular", "muted")}>
           検索条件を変更するか、新しいイベントを作成してください
         </div>
       </div>
@@ -26,10 +36,21 @@ export default function EventsList({ events }: EventsListProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {events.map((event) => (
-        <Card key={event.id} className={cn(createCardClasses('default'), UI_CONSTANTS.states.hover)}>
+        <Card
+          key={event.id}
+          className={cn(
+            createCardClasses("default"),
+            UI_CONSTANTS.states.hover,
+          )}
+        >
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between gap-2">
-              <CardTitle className={cn(createTypographyClasses('l', 'bold', 'primary'), "line-clamp-2 min-h-[3.5rem] flex items-center")}>
+              <CardTitle
+                className={cn(
+                  createTypographyClasses("l", "bold", "primary"),
+                  "line-clamp-2 min-h-[3.5rem] flex items-center",
+                )}
+              >
                 {event.title}
               </CardTitle>
               <div className="flex-shrink-0 mt-1">
@@ -42,7 +63,7 @@ export default function EventsList({ events }: EventsListProps) {
                       "inline-flex p-1.5 rounded-md transition-colors",
                       UI_CONSTANTS.states.hover,
                       UI_CONSTANTS.colors.mutedText,
-                      "hover:text-primary hover:bg-primary/10"
+                      "hover:text-primary hover:bg-primary/10",
                     )}
                     aria-label="外部ページを開く"
                   >
@@ -56,28 +77,52 @@ export default function EventsList({ events }: EventsListProps) {
             {/* Stats */}
             <div className="grid grid-cols-2 gap-3">
               <div className="flex items-center gap-2">
-                <div className={cn("p-1.5 rounded-md", UI_CONSTANTS.colors.accent)}>
+                <div
+                  className={cn("p-1.5 rounded-md", UI_CONSTANTS.colors.accent)}
+                >
                   <UserCheck className="h-4 w-4" />
                 </div>
                 <div>
-                  <div className={createTypographyClasses('m', 'bold', 'primary')}>
+                  <div
+                    className={createTypographyClasses("m", "bold", "primary")}
+                  >
                     {event.attendance}人
                   </div>
-                  <div className={createTypographyClasses('xs', 'regular', 'muted')}>
+                  <div
+                    className={createTypographyClasses(
+                      "xs",
+                      "regular",
+                      "muted",
+                    )}
+                  >
                     出席者
                   </div>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
-                <div className={cn("p-1.5 rounded-md", UI_CONSTANTS.colors.secondary, UI_CONSTANTS.colors.secondaryText)}>
+                <div
+                  className={cn(
+                    "p-1.5 rounded-md",
+                    UI_CONSTANTS.colors.secondary,
+                    UI_CONSTANTS.colors.secondaryText,
+                  )}
+                >
                   <Users className="h-4 w-4" />
                 </div>
                 <div>
-                  <div className={createTypographyClasses('m', 'bold', 'primary')}>
+                  <div
+                    className={createTypographyClasses("m", "bold", "primary")}
+                  >
                     {event.owners?.length || 0}人
                   </div>
-                  <div className={createTypographyClasses('xs', 'regular', 'muted')}>
+                  <div
+                    className={createTypographyClasses(
+                      "xs",
+                      "regular",
+                      "muted",
+                    )}
+                  >
                     管理者
                   </div>
                 </div>
@@ -87,7 +132,12 @@ export default function EventsList({ events }: EventsListProps) {
             {/* Owner Badges */}
             {event.owners && event.owners.length > 0 && (
               <div>
-                <div className={cn("mb-2", createTypographyClasses('xs', 'medium', 'muted'))}>
+                <div
+                  className={cn(
+                    "mb-2",
+                    createTypographyClasses("xs", "medium", "muted"),
+                  )}
+                >
                   管理者
                 </div>
                 <div className="flex flex-wrap gap-1">
@@ -95,7 +145,10 @@ export default function EventsList({ events }: EventsListProps) {
                     <Badge
                       key={owner.id}
                       variant="secondary"
-                      className={cn("text-xs", UI_CONSTANTS.colors.secondaryText)}
+                      className={cn(
+                        "text-xs",
+                        UI_CONSTANTS.colors.secondaryText,
+                      )}
                     >
                       {owner.user.name}
                     </Badge>
@@ -120,7 +173,7 @@ export default function EventsList({ events }: EventsListProps) {
                   UI_CONSTANTS.colors.primary,
                   UI_CONSTANTS.colors.primaryText,
                   UI_CONSTANTS.states.hover,
-                  "hover:opacity-90"
+                  "hover:opacity-90",
                 )}
               >
                 <Calendar className="h-4 w-4" />

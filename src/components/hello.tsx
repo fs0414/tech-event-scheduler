@@ -1,14 +1,14 @@
-import type { CenterProps } from "@yamada-ui/react"
-import type { ReactNode } from "react"
-import type { NextLinkButtonProps } from "./next-link"
-import { ButtonGroup, Center, Heading, Text, VStack } from "@yamada-ui/react"
-import { NextLinkButton } from "./next-link"
+import type { CenterProps } from "@yamada-ui/react";
+import { ButtonGroup, Center, Heading, Text, VStack } from "@yamada-ui/react";
+import type { ReactNode } from "react";
+import type { NextLinkButtonProps } from "./next-link";
+import { NextLinkButton } from "./next-link";
 
 export interface HeroProps extends Omit<CenterProps, "title"> {
-  description: ReactNode
-  title: ReactNode
-  primaryButtonProps?: NextLinkButtonProps
-  secondaryButtonProps?: NextLinkButtonProps
+  description: ReactNode;
+  title: ReactNode;
+  primaryButtonProps?: NextLinkButtonProps;
+  secondaryButtonProps?: NextLinkButtonProps;
 }
 
 export function Hero({
@@ -46,5 +46,5 @@ export function Hero({
         ) : null}
       </VStack>
     </Center>
-  )
+  );
 }
