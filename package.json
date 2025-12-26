@@ -3,17 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack -p 3050",
-    "build": "prisma generate && next build",
-    "start": "next start",
-    "vercel-build": "prisma generate && next build && prisma migrate deploy",
-    "lint": "biome lint .",
-    "format": "biome format .",
-    "check": "biome check .",
-    "lint:fix": "biome format --write .",
-    "format:fix": "biome format --write .",
-    "check:fix": "biome check --write .",
-    "db:seed": "prisma db seed"
+    "dev": "bun --bun next dev --turbopack -p 3050",
+    "build": "bunx prisma generate && bun --bun next build",
+    "start": "bun --bun next start",
+    "vercel-build": "bunx prisma generate && bun --bun next build && bunx prisma migrate deploy",
+    "lint": "bun run biome lint .",
+    "format": "bun run biome format .",
+    "check": "bun run biome check .",
+    "lint:fix": "bun run biome format --write .",
+    "format:fix": "bun run biome format --write .",
+    "check:fix": "bun run biome check --write .",
+    "db:seed": "bunx prisma db seed",
+    "prisma:generate": "bunx prisma generate",
+    "prisma:migrate": "bunx prisma migrate dev",
+    "prisma:studio": "bunx prisma studio"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

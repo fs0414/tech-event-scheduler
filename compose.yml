@@ -1,0 +1,19 @@
+services:
+  app:
+    build:
+      context: .
+      target: dev
+    ports:
+      - "3050:3050"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    env_file:
+      - .env
+    environment:
+      - WATCHPACK_POLLING=true
+      - DATABASE_URL=postgresql://postgres:postgres@host.docker.internal:54322/postgres
+      - DIRECT_URL=postgresql://postgres:postgres@host.docker.internal:54322/postgres
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

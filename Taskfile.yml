@@ -1,0 +1,19 @@
+version: "3"
+
+tasks:
+  dev:
+    desc: Start local development environment
+    cmds:
+      - supabase start
+      - docker compose up -d --build
+
+  logs:
+    desc: Follow app container logs
+    cmds:
+      - docker compose logs -f --tail=0 app
+
+  stop:
+    desc: Stop all containers
+    cmds:
+      - docker compose down
+      - supabase stop
