@@ -2,6 +2,6 @@
   "buildCommand": "bun run vercel-build",
   "outputDirectory": ".next",
   "framework": "nextjs",
-  "installCommand": "bun install",
+  "installCommand": "bun install --no-cache",
   "bunVersion": "1"
 }
