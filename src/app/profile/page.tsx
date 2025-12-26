@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import ProfileClient from "@/components/profile-client";
 import { getCurrentUserWithAutoCreate } from "@/lib/auth-helpers";
 
+export const dynamic = "force-dynamic";
+
 export default async function ProfilePage() {
   try {
     // 認証ユーザー取得

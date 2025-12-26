@@ -5,6 +5,8 @@ import { getCurrentUserWithAutoCreate } from "@/lib/auth-helpers";
 import { getEventStats, getEventsForUser } from "@/lib/data";
 import { cn, UI_CONSTANTS } from "@/lib/ui-constants";
 
+export const dynamic = "force-dynamic";
+
 interface EventsPageProps {
   searchParams: Promise<{ search?: string }>;
 }
@@ -13,16 +15,13 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
   const { search } = await searchParams;
 
   try {
-    // 認証ユーザー取得（自動作成付き）
     const dbUser = await getCurrentUserWithAutoCreate();
 
-    // 並列でデータを取得して最適化
     const [events, stats] = await Promise.all([
       getEventsForUser(dbUser.id, search),
       getEventStats(dbUser.id),
     ]);
 
-    // 検索によるフィルタリング（クライアントサイドでも同期）
     const filteredEvents = search
       ? events.filter((event) =>
           event.title.toLowerCase().includes(search.toLowerCase()),
@@ -42,8 +41,6 @@ export default async function EventsPage({ searchParams }: EventsPageProps) {
     );
   } catch (error) {
     console.error("Events page error:", error);
-    // getCurrentUserWithAutoCreate内でリトライロジックが実装されたため、
-    // 認証エラーの場合はログインページにリダイレクト
     redirect("/auth/login");
   }
 }
