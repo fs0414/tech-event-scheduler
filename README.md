@@ -153,3 +153,7 @@ task tf:apply:prod    # prod環境
 task deploy:api       # APIをCloudflare Workersにデプロイ
 task deploy:web       # WebをCloudflare Pagesにデプロイ
 ```
+
+## 本番環境URL
+
+https://tech-event-scheduler-web.workers.dev
