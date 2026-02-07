@@ -1,0 +1,226 @@
+version: "3"
+
+vars:
+  BUN: bun
+  TURBO: "{{.BUN}} run turbo"
+
+tasks:
+  # === 開発 ===
+
+  # default:
+  #   desc: "開発サーバーを起動"
+  #   cmds:
+  #     - task: dev
+
+  dev:
+    desc: "開発サーバーを起動 (全アプリ)"
+    cmds:
+      - "{{.BUN}} run dev"
+
+  dev:web:
+    desc: "Webフロントエンドの開発サーバーを起動"
+    dir: apps/web
+    cmds:
+      - "{{.BUN}} run dev"
+
+  dev:api:
+    desc: "APIサーバーの開発サーバーを起動"
+    dir: apps/api
+    cmds:
+      - "{{.BUN}} run dev"
+
+  # === ビルド ===
+
+  build:
+    desc: "全パッケージをビルド"
+    cmds:
+      - "{{.BUN}} run build"
+
+  build:web:
+    desc: "Webフロントエンドをビルド"
+    dir: apps/web
+    cmds:
+      - "{{.BUN}} run build"
+
+  build:api:
+    desc: "APIをビルド"
+    dir: apps/api
+    cmds:
+      - "{{.BUN}} run build"
+
+  # === コード品質 ===
+
+  lint:
+    desc: "全パッケージをリント"
+    cmds:
+      - "{{.BUN}} run lint"
+
+  format:
+    desc: "全パッケージをフォーマット"
+    cmds:
+      - "{{.BUN}} run format"
+
+  typecheck:
+    desc: "全パッケージの型チェック"
+    cmds:
+      - "{{.BUN}} run typecheck"
+
+  check:
+    desc: "lint + typecheck を実行"
+    cmds:
+      - task: lint
+      - task: typecheck
+
+  # === データベース ===
+
+  db:generate:
+    desc: "Drizzleマイグレーションを生成"
+    dir: packages/db
+    cmds:
+      - "{{.BUN}} run db:generate"
+
+  db:migrate:
+    desc: "マイグレーションを実行"
+    dir: packages/db
+    cmds:
+      - "{{.BUN}} run db:migrate"
+
+  db:push:
+    desc: "スキーマをDBに直接プッシュ (開発用)"
+    dir: packages/db
+    cmds:
+      - "{{.BUN}} run db:push"
+
+  db:studio:
+    desc: "Drizzle Studioを起動"
+    dir: packages/db
+    cmds:
+      - "{{.BUN}} run db:studio"
+
+  # === Docker ===
+
+  docker:up:
+    desc: "Docker Compose で開発環境を起動"
+    cmds:
+      - docker compose up -d
+
+  docker:down:
+    desc: "Docker Compose を停止"
+    cmds:
+      - docker compose down
+
+  docker:logs:
+    desc: "ログを表示"
+    cmds:
+      - docker compose logs -f
+
+  docker:build:
+    desc: "Docker イメージをビルド"
+    cmds:
+      - docker compose build
+
+  docker:watch:
+    desc: "ファイル変更を監視して自動同期"
+    cmds:
+      - docker compose watch
+
+  # === Terraform ===
+
+  tf:init:
+    desc: "Terraformを初期化"
+    dir: infra
+    cmds:
+      - terraform init
+
+  tf:plan:
+    desc: "Terraform planを実行 (dev環境)"
+    dir: infra
+    cmds:
+      - terraform plan -var-file=environments/dev/terraform.tfvars
+
+  tf:plan:prod:
+    desc: "Terraform planを実行 (prod環境)"
+    dir: infra
+    cmds:
+      - terraform plan -var-file=environments/prod/terraform.tfvars
+
+  tf:apply:
+    desc: "Terraform applyを実行 (dev環境)"
+    dir: infra
+    cmds:
+      - terraform apply -var-file=environments/dev/terraform.tfvars
+
+  tf:apply:prod:
+    desc: "Terraform applyを実行 (prod環境)"
+    dir: infra
+    cmds:
+      - terraform apply -var-file=environments/prod/terraform.tfvars
+
+  # === デプロイ ===
+
+  deploy:web:
+    desc: "Webフロントエンドをデプロイ"
+    dir: apps/web
+    cmds:
+      - task: build:web
+      - bunx wrangler pages deploy .output/public
+
+  deploy:web:dry:
+    desc: "Webフロントエンドのデプロイをドライラン"
+    dir: apps/web
+    cmds:
+      - bunx wrangler pages deploy .output/public --dry-run
+
+  deploy:api:
+    desc: "APIをデプロイ"
+    dir: apps/api
+    cmds:
+      - bunx wrangler deploy
+
+  deploy:api:dry:
+    desc: "APIのデプロイをドライラン"
+    dir: apps/api
+    cmds:
+      - bunx wrangler deploy --dry-run
+
+  deploy:all:
+    desc: "全アプリをデプロイ"
+    cmds:
+      - task: deploy:api
+      - task: deploy:web
+
+  # === セットアップ ===
+
+  setup:
+    desc: "プロジェクトの初期セットアップ"
+    cmds:
+      - "{{.BUN}} install"
+      - task: typecheck
+      - echo "セットアップ完了"
+
+  clean:
+    desc: "ビルド成果物を削除"
+    cmds:
+      - "{{.BUN}} run clean"
+      - rm -rf node_modules/.cache
+      - rm -rf .turbo
+
+  clean:all:
+    desc: "全てのnode_modulesを削除"
+    cmds:
+      - task: clean
+      - rm -rf node_modules
+      - rm -rf apps/*/node_modules
+      - rm -rf packages/*/node_modules
+
+  # === ユーティリティ ===
+
+  deps:update:
+    desc: "依存関係を更新"
+    cmds:
+      - "{{.BUN}} update"
+
+  deps:check:
+    desc: "依存関係の脆弱性をチェック"
+    cmds:
+      - bunx npm-audit --audit-level=moderate

@@ -1,0 +1,26 @@
+FROM oven/bun:1.3 AS base
+WORKDIR /app
+
+# Install dependencies
+COPY package.json bun.lock turbo.json ./
+COPY apps/web/package.json ./apps/web/
+COPY apps/api/package.json ./apps/api/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/db/package.json ./packages/db/
+COPY packages/ui/package.json ./packages/ui/
+
+RUN bun install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Web target
+FROM base AS web
+WORKDIR /app/apps/web
+EXPOSE 3040
+CMD ["bun", "run", "vite", "dev", "--config", "vite.config.docker.ts"]
+
+# API target
+FROM base AS api
+EXPOSE 3050
+CMD ["bun", "run", "--filter", "@tech-event-scheduler/api", "dev"]

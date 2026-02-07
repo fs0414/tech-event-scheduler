@@ -1,0 +1,62 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+.output/
+.vinxi/
+.wrangler/
+.tanstack/
+
+# Turborepo
+.turbo/
+
+# Local data
+data/
+
+# Drizzle
+drizzle/
+
+# Generated files
+*.gen.ts
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars.json
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Lock files (keep bun.lockb, ignore others)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+.claude/plans/
+
+docs/devlog/
+docs/issues/

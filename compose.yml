@@ -1,0 +1,59 @@
+services:
+  # D1互換 SQLite サーバー (libSQL/sqld)
+  db:
+    image: ghcr.io/tursodatabase/libsql-server:latest
+    container_name: tech-event-scheduler-db
+    ports:
+      - "8080:8080"
+      - "5001:5001"
+    volumes:
+      - db-data:/var/lib/sqld
+    environment:
+      - SQLD_NODE=primary
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: api
+    ports:
+      - "3050:3050"
+    environment:
+      - PORT=3050
+      - DATABASE_URL=http://db:8080
+      - CORS_ORIGIN=http://localhost:3040
+      - BETTER_AUTH_SECRET=dev-secret-change-in-production
+      - BETTER_AUTH_URL=http://localhost:3050
+    depends_on:
+      - db
+    develop:
+      watch:
+        - action: sync
+          path: ./apps/api/src
+          target: /app/apps/api/src
+        - action: sync
+          path: ./packages
+          target: /app/packages
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: web
+    ports:
+      - "3040:3040"
+    environment:
+      - VITE_API_URL=http://localhost:3050
+    depends_on:
+      - api
+    develop:
+      watch:
+        - action: sync
+          path: ./apps/web/src
+          target: /app/apps/web/src
+        - action: sync
+          path: ./packages
+          target: /app/packages
+
+volumes:
+  db-data:

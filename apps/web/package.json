@@ -1,0 +1,40 @@
+{
+  "name": "@tech-event-scheduler/web",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build && tsc --noEmit",
+    "preview": "vite preview",
+    "deploy": "bun run build && wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint .",
+    "format": "oxlint --fix .",
+    "clean": "rm -rf .output dist node_modules/.vite",
+    "cf-typegen": "wrangler types"
+  },
+  "dependencies": {
+    "@tanstack/react-router": "^1.158.4",
+    "@tanstack/react-start": "^1.159.0",
+    "@tech-event-scheduler/shared": "workspace:*",
+    "@tech-event-scheduler/ui": "workspace:*",
+    "@yamada-ui/react": "^1.7.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.13.7",
+    "@cloudflare/workers-types": "^4.20250204.0",
+    "@tailwindcss/vite": "^4.1.0",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.6.0",
+    "tailwindcss": "^4.0.6",
+    "typescript": "^5.8.3",
+    "vite": "^7.3.1",
+    "vite-tsconfig-paths": "^5.1.4",
+    "wrangler": "^4.49.1"
+  }
+}
