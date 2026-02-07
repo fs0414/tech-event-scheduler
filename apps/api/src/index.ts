@@ -11,21 +11,14 @@ import {
   createRepositories,
 } from "@tech-event-scheduler/db";
 import { createAuth, type Auth } from "./auth";
-import { createEventsRoutes } from "./routes/events";
+import { createEventsRoutes, type EventRoutesDeps } from "./routes/events";
 import { healthRoutes } from "./routes/health";
 import type { Env } from "./types";
 
 /**
  * アプリケーションインスタンスを作成
  */
-function createApp(
-  deps: {
-    events: ReturnType<typeof createRepositories>["events"];
-    eventParticipants: ReturnType<typeof createRepositories>["eventParticipants"];
-  },
-  auth: Auth,
-  corsOrigin: string
-) {
+function createApp(deps: EventRoutesDeps, auth: Auth, corsOrigin: string) {
   return new Elysia()
     .use(
       cors({
@@ -62,7 +55,11 @@ export default {
     const auth = createAuth(env);
 
     // アプリケーションを作成
-    const app = createApp(repositories, auth, env.CORS_ORIGIN);
+    const app = createApp(
+      { events: repositories.events, owners: repositories.owners },
+      auth,
+      env.CORS_ORIGIN
+    );
 
     return app.handle(request);
   },

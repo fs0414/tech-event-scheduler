@@ -43,7 +43,12 @@ const app = new Elysia()
     })
   )
   .use(healthRoutes)
-  .use(createEventsRoutes(repositories))
+  .use(
+    createEventsRoutes({
+      events: repositories.events,
+      owners: repositories.owners,
+    })
+  )
   .all("/api/auth/*", async ({ request }) => {
     return auth.handler(request);
   })

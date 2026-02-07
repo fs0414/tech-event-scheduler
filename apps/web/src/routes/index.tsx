@@ -13,9 +13,13 @@ import {
   Alert,
   AlertIcon,
   AlertDescription,
+  Card,
+  CardBody,
+  CardHeader,
+  Badge,
 } from "@yamada-ui/react";
 import { useCallback, useEffect, useState } from "react";
-import { PageLayout, EventCard, EventCardSkeleton } from "@tech-event-scheduler/ui";
+import { PageLayout } from "@tech-event-scheduler/ui";
 import { isSuccess, toISO8601, type EventResponse } from "@tech-event-scheduler/shared";
 import { api } from "~/lib/api-client";
 
@@ -34,6 +38,65 @@ export const Route = createFileRoute("/")({
 });
 
 // === コンポーネント ===
+
+/**
+ * イベントカード（シンプル版）
+ */
+function SimpleEventCard({
+  event,
+  onViewDetails,
+}: {
+  event: EventResponse;
+  onViewDetails: () => void;
+}) {
+  return (
+    <Card>
+      <CardHeader>
+        <HStack justify="space-between">
+          <Heading size="md">{event.title}</Heading>
+          <Badge colorScheme="blue">{event.attendance}人参加</Badge>
+        </HStack>
+      </CardHeader>
+      <CardBody>
+        <VStack align="stretch" gap={2}>
+          {event.eventUrl && (
+            <Text fontSize="sm" color="blue.500">
+              {event.eventUrl}
+            </Text>
+          )}
+          <Text fontSize="xs" color="gray.500">
+            作成日: {new Date(event.createdAt).toLocaleDateString("ja-JP")}
+          </Text>
+          <Button size="sm" variant="outline" onClick={onViewDetails}>
+            詳細を見る
+          </Button>
+        </VStack>
+      </CardBody>
+    </Card>
+  );
+}
+
+/**
+ * イベントカードスケルトン
+ */
+function EventCardSkeleton() {
+  return (
+    <Card>
+      <CardHeader>
+        <Heading size="md" color="gray.300">
+          読み込み中...
+        </Heading>
+      </CardHeader>
+      <CardBody>
+        <VStack align="stretch" gap={2}>
+          <Text fontSize="sm" color="gray.300">
+            ・・・・・・
+          </Text>
+        </VStack>
+      </CardBody>
+    </Card>
+  );
+}
 
 function HomePage() {
   const [eventsState, setEventsState] = useState<EventsState>({
@@ -69,7 +132,7 @@ function HomePage() {
   }, [fetchEvents]);
 
   // イベント詳細を表示
-  const handleViewDetails = useCallback((eventId: string) => {
+  const handleViewDetails = useCallback((eventId: number) => {
     console.log(`View event: ${eventId}`);
     // TODO: ルーターでイベント詳細ページに遷移
   }, []);
@@ -78,40 +141,26 @@ function HomePage() {
   const now = new Date();
   const demoEvents: readonly EventResponse[] = [
     {
-      id: "1",
+      id: 1,
       title: "React Conf 2025",
-      description:
-        "Reactの最新動向を学ぶカンファレンス。新機能やベストプラクティスについて深く学べます。",
-      startDate: toISO8601(new Date("2025-03-15")),
-      endDate: toISO8601(new Date("2025-03-16")),
-      location: "東京",
-      url: null,
-      organizerId: "demo-user",
+      eventUrl: "https://reactconf.dev",
+      attendance: 150,
       createdAt: toISO8601(now),
       updatedAt: toISO8601(now),
     },
     {
-      id: "2",
+      id: 2,
       title: "TypeScript Meetup",
-      description:
-        "TypeScriptの実践的な使い方を共有するミートアップ。初心者から上級者まで参加可能。",
-      startDate: toISO8601(new Date("2025-03-20")),
-      endDate: toISO8601(new Date("2025-03-20")),
-      location: "オンライン",
-      url: null,
-      organizerId: "demo-user",
+      eventUrl: null,
+      attendance: 50,
       createdAt: toISO8601(now),
       updatedAt: toISO8601(now),
     },
     {
-      id: "3",
+      id: 3,
       title: "DevOps Days Tokyo",
-      description: "DevOpsの文化とプラクティスを学ぶ2日間のイベント。",
-      startDate: toISO8601(new Date("2025-04-01")),
-      endDate: toISO8601(new Date("2025-04-02")),
-      location: "渋谷",
-      url: null,
-      organizerId: "demo-user",
+      eventUrl: "https://devopsdays.org",
+      attendance: 200,
       createdAt: toISO8601(now),
       updatedAt: toISO8601(now),
     },
@@ -168,14 +217,9 @@ function HomePage() {
             ) : (
               // イベントカード一覧
               displayEvents.map((event) => (
-                <EventCard
+                <SimpleEventCard
                   key={event.id}
-                  title={event.title}
-                  description={event.description}
-                  startDate={new Date(event.startDate)}
-                  endDate={new Date(event.endDate)}
-                  location={event.location}
-                  url={event.url}
+                  event={event}
                   onViewDetails={() => handleViewDetails(event.id)}
                 />
               ))

@@ -5,12 +5,11 @@
 import { Elysia, t } from "elysia";
 import {
   type EventRepository,
-  type EventParticipantRepository,
+  type OwnerRepository,
   type NewEvent,
   type Event,
 } from "@tech-event-scheduler/db";
 import {
-  generateEventId,
   eventToResponse,
   type EventResponse,
   success,
@@ -25,12 +24,7 @@ import {
  */
 const createEventBodySchema = t.Object({
   title: t.String({ minLength: 1, maxLength: 200 }),
-  description: t.String({ minLength: 1, maxLength: 5000 }),
-  startDate: t.String({ format: "date-time" }),
-  endDate: t.String({ format: "date-time" }),
-  location: t.Optional(t.String({ maxLength: 200 })),
-  url: t.Optional(t.String({ format: "uri" })),
-  organizerId: t.String({ format: "uuid" }),
+  eventUrl: t.Optional(t.String({ format: "uri" })),
 });
 
 /**
@@ -38,18 +32,15 @@ const createEventBodySchema = t.Object({
  */
 const updateEventBodySchema = t.Object({
   title: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
-  description: t.Optional(t.String({ minLength: 1, maxLength: 5000 })),
-  startDate: t.Optional(t.String({ format: "date-time" })),
-  endDate: t.Optional(t.String({ format: "date-time" })),
-  location: t.Optional(t.Union([t.String({ maxLength: 200 }), t.Null()])),
-  url: t.Optional(t.Union([t.String({ format: "uri" }), t.Null()])),
+  eventUrl: t.Optional(t.Union([t.String({ format: "uri" }), t.Null()])),
+  attendance: t.Optional(t.Number({ minimum: 0 })),
 });
 
 /**
  * IDパラメータのスキーマ
  */
 const idParamSchema = t.Object({
-  id: t.String({ format: "uuid" }),
+  id: t.String(),
 });
 
 // === ヘルパー関数 ===
@@ -58,11 +49,7 @@ const idParamSchema = t.Object({
  * DBのイベントをレスポンス型に変換
  */
 function toEventResponse(dbEvent: Event): EventResponse {
-  return eventToResponse({
-    ...dbEvent,
-    id: dbEvent.id as import("@tech-event-scheduler/shared").EventId,
-    organizerId: dbEvent.organizerId as import("@tech-event-scheduler/shared").UserId,
-  });
+  return eventToResponse(dbEvent);
 }
 
 // === ルート定義 ===
@@ -70,9 +57,9 @@ function toEventResponse(dbEvent: Event): EventResponse {
 /**
  * リポジトリ依存
  */
-interface EventRoutesDeps {
+export interface EventRoutesDeps {
   readonly events: EventRepository;
-  readonly eventParticipants: EventParticipantRepository;
+  readonly owners: OwnerRepository;
 }
 
 /**
@@ -96,7 +83,13 @@ export const createEventsRoutes = (deps: EventRoutesDeps) =>
     .get(
       "/:id",
       async ({ params, set }) => {
-        const result = await deps.events.findById(params.id);
+        const eventId = Number(params.id);
+        if (Number.isNaN(eventId)) {
+          set.status = 400;
+          return failure(ApiErrors.validationError("IDは数値である必要があります"));
+        }
+
+        const result = await deps.events.findById(eventId);
 
         if (!result) {
           set.status = 404;
@@ -116,29 +109,11 @@ export const createEventsRoutes = (deps: EventRoutesDeps) =>
     .post(
       "/",
       async ({ body, set }) => {
-        // 日付のバリデーション
-        const startDate = new Date(body.startDate);
-        const endDate = new Date(body.endDate);
-
-        if (startDate > endDate) {
-          set.status = 422;
-          return failure(
-            ApiErrors.validationError("終了日は開始日以降である必要があります", {
-              field: "endDate",
-            })
-          );
-        }
-
         const now = new Date();
         const newEvent: NewEvent = {
-          id: generateEventId(),
           title: body.title,
-          description: body.description,
-          startDate,
-          endDate,
-          location: body.location ?? null,
-          url: body.url ?? null,
-          organizerId: body.organizerId,
+          eventUrl: body.eventUrl ?? null,
+          attendance: 0,
           createdAt: now,
           updatedAt: now,
         };
@@ -159,42 +134,27 @@ export const createEventsRoutes = (deps: EventRoutesDeps) =>
     .patch(
       "/:id",
       async ({ params, body, set }) => {
-        // 既存イベントの取得
-        const existing = await deps.events.findById(params.id);
+        const eventId = Number(params.id);
+        if (Number.isNaN(eventId)) {
+          set.status = 400;
+          return failure(ApiErrors.validationError("IDは数値である必要があります"));
+        }
+
+        const existing = await deps.events.findById(eventId);
 
         if (!existing) {
           set.status = 404;
           return failure(ApiErrors.notFound("イベント"));
         }
 
-        // 日付のバリデーション
-        const startDate = body.startDate
-          ? new Date(body.startDate)
-          : existing.startDate;
-        const endDate = body.endDate
-          ? new Date(body.endDate)
-          : existing.endDate;
-
-        if (startDate > endDate) {
-          set.status = 422;
-          return failure(
-            ApiErrors.validationError("終了日は開始日以降である必要があります", {
-              field: "endDate",
-            })
-          );
-        }
-
         const updateData = {
           ...(body.title !== undefined && { title: body.title }),
-          ...(body.description !== undefined && { description: body.description }),
-          ...(body.startDate !== undefined && { startDate }),
-          ...(body.endDate !== undefined && { endDate }),
-          ...(body.location !== undefined && { location: body.location }),
-          ...(body.url !== undefined && { url: body.url }),
+          ...(body.eventUrl !== undefined && { eventUrl: body.eventUrl }),
+          ...(body.attendance !== undefined && { attendance: body.attendance }),
           updatedAt: new Date(),
         };
 
-        const updated = await deps.events.update(params.id, updateData);
+        const updated = await deps.events.update(eventId, updateData);
 
         if (!updated) {
           set.status = 500;
@@ -215,19 +175,24 @@ export const createEventsRoutes = (deps: EventRoutesDeps) =>
     .delete(
       "/:id",
       async ({ params, set }) => {
-        // 既存イベントの確認
-        const exists = await deps.events.exists(params.id);
+        const eventId = Number(params.id);
+        if (Number.isNaN(eventId)) {
+          set.status = 400;
+          return failure(ApiErrors.validationError("IDは数値である必要があります"));
+        }
+
+        const exists = await deps.events.exists(eventId);
 
         if (!exists) {
           set.status = 404;
           return failure(ApiErrors.notFound("イベント"));
         }
 
-        // 関連する参加者を削除
-        await deps.eventParticipants.deleteByEventId(params.id);
+        // 関連するオーナーを削除
+        await deps.owners.deleteByEventId(eventId);
 
         // イベントを削除
-        await deps.events.delete(params.id);
+        await deps.events.delete(eventId);
 
         return success({ deleted: true as const });
       },
