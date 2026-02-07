@@ -15,6 +15,7 @@ import type {
   SelectBuilder,
   QueryResult,
   QueryResults,
+  InsertResult,
 } from "./types";
 
 /**
@@ -75,8 +76,17 @@ export class DrizzleAdapter implements DatabaseAdapter {
   async insert<T extends SQLiteTable>(
     table: T,
     values: SQLiteInsertValue<T>
-  ): Promise<void> {
-    await this.drizzle.insert(table).values(values);
+  ): Promise<InsertResult> {
+    const result = await this.drizzle.insert(table).values(values).run();
+    // D1 uses meta.last_row_id, libSQL uses lastInsertRowid
+    let lastInsertRowid: number | bigint = 0;
+    if ("lastInsertRowid" in result && result.lastInsertRowid != null) {
+      lastInsertRowid = result.lastInsertRowid;
+    } else if ("meta" in result) {
+      const meta = result.meta as { last_row_id?: number };
+      lastInsertRowid = meta.last_row_id ?? 0;
+    }
+    return { lastInsertRowid };
   }
 
   async update<T extends SQLiteTable>(

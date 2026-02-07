@@ -8,36 +8,40 @@ import type {
   Event,
   NewEvent,
   UpdateEvent,
-  EventParticipant,
-  NewEventParticipant,
-  UpdateEventParticipant,
+  Owner,
+  NewOwner,
+  UpdateOwner,
+  Article,
+  NewArticle,
+  UpdateArticle,
+  Speaker,
+  NewSpeaker,
+  UpdateSpeaker,
+  Timer,
+  NewTimer,
+  UpdateTimer,
   User,
 } from "../schema";
 
 /**
- * イベントと主催者情報
+ * オーナーとユーザー情報
  */
-export interface EventWithOrganizer extends Event {
-  readonly organizer: User;
+export interface OwnerWithUser extends Owner {
+  readonly user: User;
 }
 
 /**
- * 参加者とユーザー情報
+ * スピーカーとユーザー・記事情報
  */
-export interface ParticipantWithUser extends EventParticipant {
+export interface SpeakerWithDetails extends Speaker {
   readonly user: User;
+  readonly article?: Article;
 }
 
 /**
  * イベント検索条件
  */
 export interface EventSearchCriteria {
-  /** 主催者ID */
-  readonly organizerId?: string;
-  /** 開始日以降 */
-  readonly startDateFrom?: Date;
-  /** 開始日以前 */
-  readonly startDateTo?: Date;
   /** タイトル部分一致 */
   readonly titleContains?: string;
 }
@@ -54,134 +58,94 @@ export interface PaginationOptions {
  * Event Repository インターフェース
  */
 export interface EventRepository {
-  /**
-   * IDでイベントを取得
-   */
-  findById(id: string): Promise<Event | undefined>;
-
-  /**
-   * 全イベントを取得
-   */
+  findById(id: number): Promise<Event | undefined>;
   findAll(options?: PaginationOptions): Promise<readonly Event[]>;
-
-  /**
-   * 条件でイベントを検索
-   */
   findByCriteria(
     criteria: EventSearchCriteria,
     options?: PaginationOptions
   ): Promise<readonly Event[]>;
-
-  /**
-   * 主催者IDでイベントを取得
-   */
-  findByOrganizerId(
-    organizerId: string,
+  findByOwnerId(
+    userId: string,
     options?: PaginationOptions
   ): Promise<readonly Event[]>;
-
-  /**
-   * イベントを作成
-   */
   create(data: NewEvent): Promise<Event>;
-
-  /**
-   * イベントを更新
-   */
-  update(id: string, data: UpdateEvent): Promise<Event | undefined>;
-
-  /**
-   * イベントを削除
-   */
-  delete(id: string): Promise<boolean>;
-
-  /**
-   * イベントの存在確認
-   */
-  exists(id: string): Promise<boolean>;
+  update(id: number, data: UpdateEvent): Promise<Event | undefined>;
+  delete(id: number): Promise<boolean>;
+  exists(id: number): Promise<boolean>;
 }
 
 /**
- * Event Participant Repository インターフェース
+ * Owner Repository インターフェース
  */
-export interface EventParticipantRepository {
-  /**
-   * IDで参加者を取得
-   */
-  findById(id: string): Promise<EventParticipant | undefined>;
-
-  /**
-   * イベントIDで参加者一覧を取得
-   */
-  findByEventId(eventId: string): Promise<readonly EventParticipant[]>;
-
-  /**
-   * ユーザーIDで参加イベント一覧を取得
-   */
-  findByUserId(userId: string): Promise<readonly EventParticipant[]>;
-
-  /**
-   * イベントIDとユーザーIDで参加者を取得
-   */
+export interface OwnerRepository {
+  findById(id: number): Promise<Owner | undefined>;
+  findByEventId(eventId: number): Promise<readonly Owner[]>;
+  findByUserId(userId: string): Promise<readonly Owner[]>;
   findByEventAndUser(
-    eventId: string,
+    eventId: number,
     userId: string
-  ): Promise<EventParticipant | undefined>;
+  ): Promise<Owner | undefined>;
+  create(data: NewOwner): Promise<Owner>;
+  update(id: number, data: UpdateOwner): Promise<Owner | undefined>;
+  delete(id: number): Promise<boolean>;
+  deleteByEventId(eventId: number): Promise<number>;
+}
 
-  /**
-   * 参加者を作成
-   */
-  create(data: NewEventParticipant): Promise<EventParticipant>;
+/**
+ * Article Repository インターフェース
+ */
+export interface ArticleRepository {
+  findById(id: number): Promise<Article | undefined>;
+  findAll(options?: PaginationOptions): Promise<readonly Article[]>;
+  create(data: NewArticle): Promise<Article>;
+  update(id: number, data: UpdateArticle): Promise<Article | undefined>;
+  delete(id: number): Promise<boolean>;
+}
 
-  /**
-   * 参加ステータスを更新
-   */
-  updateStatus(
-    id: string,
-    data: UpdateEventParticipant
-  ): Promise<EventParticipant | undefined>;
+/**
+ * Speaker Repository インターフェース
+ */
+export interface SpeakerRepository {
+  findById(id: number): Promise<Speaker | undefined>;
+  findByEventId(eventId: number): Promise<readonly Speaker[]>;
+  findByUserId(userId: string): Promise<readonly Speaker[]>;
+  findByEventAndUser(
+    eventId: number,
+    userId: string
+  ): Promise<Speaker | undefined>;
+  create(data: NewSpeaker): Promise<Speaker>;
+  update(id: number, data: UpdateSpeaker): Promise<Speaker | undefined>;
+  delete(id: number): Promise<boolean>;
+  deleteByEventId(eventId: number): Promise<number>;
+}
 
-  /**
-   * 参加者を削除
-   */
-  delete(id: string): Promise<boolean>;
-
-  /**
-   * イベントの全参加者を削除
-   */
-  deleteByEventId(eventId: string): Promise<number>;
+/**
+ * Timer Repository インターフェース
+ */
+export interface TimerRepository {
+  findById(id: number): Promise<Timer | undefined>;
+  findByEventId(eventId: number): Promise<readonly Timer[]>;
+  create(data: NewTimer): Promise<Timer>;
+  update(id: number, data: UpdateTimer): Promise<Timer | undefined>;
+  delete(id: number): Promise<boolean>;
+  deleteByEventId(eventId: number): Promise<number>;
+  reorder(eventId: number, timerIds: number[]): Promise<void>;
 }
 
 /**
  * User Repository インターフェース
  */
 export interface UserRepository {
-  /**
-   * IDでユーザーを取得
-   */
   findById(id: string): Promise<User | undefined>;
-
-  /**
-   * メールアドレスでユーザーを取得
-   */
   findByEmail(email: string): Promise<User | undefined>;
-
-  /**
-   * ユーザーの存在確認
-   */
   exists(id: string): Promise<boolean>;
 }
 
 /**
  * Unit of Work パターン
- *
- * トランザクション境界を管理
  */
 export interface UnitOfWork {
-  /**
-   * トランザクション内で処理を実行
-   */
-  transaction<R>(fn: (uow: Repositories) => Promise<R>): Promise<R>;
+  transaction<R>(fn: (repos: Repositories) => Promise<R>): Promise<R>;
 }
 
 /**
@@ -189,6 +153,9 @@ export interface UnitOfWork {
  */
 export interface Repositories {
   readonly events: EventRepository;
-  readonly eventParticipants: EventParticipantRepository;
+  readonly owners: OwnerRepository;
+  readonly articles: ArticleRepository;
+  readonly speakers: SpeakerRepository;
+  readonly timers: TimerRepository;
   readonly users: UserRepository;
 }

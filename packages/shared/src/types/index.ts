@@ -19,8 +19,15 @@ export * from "./datetime";
 
 // === エンティティ型（DBスキーマから派生させるためのベース型） ===
 
-import type { EventId, UserId, EventParticipantId } from "./branded";
-import type { ParticipantStatus } from "./enums";
+import type {
+  EventId,
+  UserId,
+  OwnerId,
+  ArticleId,
+  SpeakerId,
+  TimerId,
+} from "./branded";
+import type { OwnerRole } from "./enums";
 
 /**
  * ベースエンティティ型 - すべてのエンティティが持つ共通フィールド
@@ -47,22 +54,49 @@ export interface User extends BaseEntity {
 export interface Event extends BaseEntity {
   readonly id: EventId;
   readonly title: string;
-  readonly description: string;
-  readonly startDate: Date;
-  readonly endDate: Date;
-  readonly location: string | null;
-  readonly url: string | null;
-  readonly organizerId: UserId;
+  readonly eventUrl: string | null;
+  readonly attendance: number;
 }
 
 /**
- * イベント参加者エンティティ型
+ * オーナーエンティティ型
  */
-export interface EventParticipant extends BaseEntity {
-  readonly id: EventParticipantId;
-  readonly eventId: EventId;
+export interface Owner extends BaseEntity {
+  readonly id: OwnerId;
   readonly userId: UserId;
-  readonly status: ParticipantStatus;
+  readonly eventId: EventId;
+  readonly role: OwnerRole;
+}
+
+/**
+ * 記事エンティティ型
+ */
+export interface Article extends BaseEntity {
+  readonly id: ArticleId;
+  readonly title: string;
+  readonly description: string | null;
+  readonly url: string | null;
+}
+
+/**
+ * スピーカーエンティティ型
+ */
+export interface Speaker extends BaseEntity {
+  readonly id: SpeakerId;
+  readonly userId: UserId;
+  readonly eventId: EventId;
+  readonly articleId: ArticleId | null;
+  readonly role: string | null;
+}
+
+/**
+ * タイマーエンティティ型
+ */
+export interface Timer extends BaseEntity {
+  readonly id: TimerId;
+  readonly eventId: EventId;
+  readonly durationMinutes: number;
+  readonly sequence: number;
 }
 
 // === DTO型（APIリクエスト/レスポンス用） ===
@@ -75,14 +109,7 @@ import type { ISO8601String } from "./datetime";
  */
 export interface CreateEventInput {
   readonly title: string;
-  readonly description: string;
-  /** ISO8601 UTC形式 */
-  readonly startDate: ISO8601String;
-  /** ISO8601 UTC形式 */
-  readonly endDate: ISO8601String;
-  readonly location?: string;
-  readonly url?: string;
-  readonly organizerId: string;
+  readonly eventUrl?: string;
 }
 
 /**
@@ -90,21 +117,8 @@ export interface CreateEventInput {
  */
 export interface UpdateEventInput {
   readonly title?: string;
-  readonly description?: string;
-  /** ISO8601 UTC形式 */
-  readonly startDate?: ISO8601String;
-  /** ISO8601 UTC形式 */
-  readonly endDate?: ISO8601String;
-  readonly location?: string | null;
-  readonly url?: string | null;
-}
-
-/**
- * イベント参加登録リクエスト
- */
-export interface RegisterParticipantInput {
-  readonly eventId: string;
-  readonly userId: string;
+  readonly eventUrl?: string | null;
+  readonly attendance?: number;
 }
 
 /**
@@ -112,16 +126,10 @@ export interface RegisterParticipantInput {
  * 日時フィールドはISO8601 UTC形式
  */
 export interface EventResponse {
-  readonly id: string;
+  readonly id: number;
   readonly title: string;
-  readonly description: string;
-  /** ISO8601 UTC形式 */
-  readonly startDate: ISO8601String;
-  /** ISO8601 UTC形式 */
-  readonly endDate: ISO8601String;
-  readonly location: string | null;
-  readonly url: string | null;
-  readonly organizerId: string;
+  readonly eventUrl: string | null;
+  readonly attendance: number;
   /** ISO8601 UTC形式 */
   readonly createdAt: ISO8601String;
   /** ISO8601 UTC形式 */

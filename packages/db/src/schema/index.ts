@@ -20,14 +20,29 @@ export {
 
 // イベント関連
 export {
+  // テーブル
   event,
-  eventParticipant,
-  PARTICIPANT_STATUSES,
-  type ParticipantStatusDB,
+  owner,
+  article,
+  speaker,
+  timer,
+  // 定数
+  OWNER_ROLES,
+  // 型
+  type OwnerRole,
   type Event,
   type NewEvent,
   type UpdateEvent,
-  type EventParticipant,
-  type NewEventParticipant,
-  type UpdateEventParticipant,
+  type Owner,
+  type NewOwner,
+  type UpdateOwner,
+  type Article,
+  type NewArticle,
+  type UpdateArticle,
+  type Speaker,
+  type NewSpeaker,
+  type UpdateSpeaker,
+  type Timer,
+  type NewTimer,
+  type UpdateTimer,
 } from "./events";

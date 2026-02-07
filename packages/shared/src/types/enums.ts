@@ -32,6 +32,23 @@ export const EVENT_STATUS_VALUES = Object.values(
   EVENT_STATUS
 ) as readonly EventStatus[];
 
+// === オーナーロール ===
+
+export const OWNER_ROLE = {
+  ADMIN: 10,
+  MEMBER: 20,
+} as const;
+
+export type OwnerRole = (typeof OWNER_ROLE)[keyof typeof OWNER_ROLE];
+
+export const OWNER_ROLE_VALUES = Object.values(
+  OWNER_ROLE
+) as readonly OwnerRole[];
+
+export function isOwnerRole(value: number): value is OwnerRole {
+  return OWNER_ROLE_VALUES.includes(value as OwnerRole);
+}
+
 // === 認証プロバイダー ===
 
 export const AUTH_PROVIDER = {

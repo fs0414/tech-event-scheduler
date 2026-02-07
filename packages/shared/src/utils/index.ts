@@ -2,7 +2,7 @@
  * ユーティリティ関数
  */
 
-import type { EventId, UserId, EventParticipantId, Brand } from "../types/branded";
+import type { UserId, Brand } from "../types/branded";
 import { createId } from "../types/branded";
 import { toISO8601 } from "../types/datetime";
 import type { EventResponse } from "../types";
@@ -35,7 +35,7 @@ export function isValidEmail(email: string): boolean {
 // === ID生成（後方互換性のため残す） ===
 
 /**
- * @deprecated createId<EventId>() を使用してください
+ * @deprecated createId<UserId>() を使用してください
  */
 export function generateId(): string {
   return crypto.randomUUID();
@@ -44,16 +44,8 @@ export function generateId(): string {
 /**
  * 型付きID生成関数
  */
-export function generateEventId(): EventId {
-  return createId<EventId>();
-}
-
 export function generateUserId(): UserId {
   return createId<UserId>();
-}
-
-export function generateEventParticipantId(): EventParticipantId {
-  return createId<EventParticipantId>();
 }
 
 // === オブジェクトユーティリティ ===
@@ -123,26 +115,18 @@ export function toResponse<T extends { createdAt: Date; updatedAt: Date }>(
  * 日時フィールドはISO8601 UTC形式に変換
  */
 export function eventToResponse(event: {
-  id: string | Brand<string, string>;
+  id: number | Brand<number, string>;
   title: string;
-  description: string;
-  startDate: Date;
-  endDate: Date;
-  location: string | null;
-  url: string | null;
-  organizerId: string | Brand<string, string>;
+  eventUrl: string | null;
+  attendance: number;
   createdAt: Date;
   updatedAt: Date;
 }): EventResponse {
   return {
-    id: event.id as string,
+    id: event.id as number,
     title: event.title,
-    description: event.description,
-    startDate: toISO8601(event.startDate),
-    endDate: toISO8601(event.endDate),
-    location: event.location,
-    url: event.url,
-    organizerId: event.organizerId as string,
+    eventUrl: event.eventUrl,
+    attendance: event.attendance,
     createdAt: toISO8601(event.createdAt),
     updatedAt: toISO8601(event.updatedAt),
   };

@@ -7,24 +7,33 @@
 // インターフェース
 export type {
   EventRepository,
-  EventParticipantRepository,
+  OwnerRepository,
+  ArticleRepository,
+  SpeakerRepository,
+  TimerRepository,
   UserRepository,
   Repositories,
   UnitOfWork,
   EventSearchCriteria,
   PaginationOptions,
-  EventWithOrganizer,
-  ParticipantWithUser,
+  OwnerWithUser,
+  SpeakerWithDetails,
 } from "./types";
 
 // ファクトリ関数
 export { createEventRepository } from "./event.repository";
-export { createEventParticipantRepository } from "./event-participant.repository";
+export { createOwnerRepository } from "./owner.repository";
+export { createArticleRepository } from "./article.repository";
+export { createSpeakerRepository } from "./speaker.repository";
+export { createTimerRepository } from "./timer.repository";
 export { createUserRepository } from "./user.repository";
 
 import type { DatabaseAdapter } from "../adapters/types";
 import { createEventRepository } from "./event.repository";
-import { createEventParticipantRepository } from "./event-participant.repository";
+import { createOwnerRepository } from "./owner.repository";
+import { createArticleRepository } from "./article.repository";
+import { createSpeakerRepository } from "./speaker.repository";
+import { createTimerRepository } from "./timer.repository";
 import { createUserRepository } from "./user.repository";
 import type { Repositories, UnitOfWork } from "./types";
 
@@ -34,7 +43,10 @@ import type { Repositories, UnitOfWork } from "./types";
 export function createRepositories(adapter: DatabaseAdapter): Repositories {
   return {
     events: createEventRepository(adapter),
-    eventParticipants: createEventParticipantRepository(adapter),
+    owners: createOwnerRepository(adapter),
+    articles: createArticleRepository(adapter),
+    speakers: createSpeakerRepository(adapter),
+    timers: createTimerRepository(adapter),
     users: createUserRepository(adapter),
   };
 }

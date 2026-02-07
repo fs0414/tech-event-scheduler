@@ -29,6 +29,13 @@ export type QueryResult<T> = T | undefined;
 export type QueryResults<T> = T[];
 
 /**
+ * Insert結果の型
+ */
+export interface InsertResult {
+  readonly lastInsertRowid: number | bigint;
+}
+
+/**
  * Where条件の型
  */
 export type WhereCondition = SQL | undefined;
@@ -79,7 +86,7 @@ export interface DatabaseAdapter {
   insert<T extends SQLiteTable>(
     table: T,
     values: SQLiteInsertValue<T>
-  ): Promise<void>;
+  ): Promise<InsertResult>;
 
   /**
    * テーブルをUPDATE

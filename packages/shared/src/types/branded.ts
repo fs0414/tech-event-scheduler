@@ -25,10 +25,13 @@ export type Unbrand<T> = T extends Brand<infer U, string> ? U : T;
 // === エンティティID型 ===
 
 export type UserId = Brand<string, "UserId">;
-export type EventId = Brand<string, "EventId">;
+export type EventId = Brand<number, "EventId">;
+export type OwnerId = Brand<number, "OwnerId">;
+export type ArticleId = Brand<number, "ArticleId">;
+export type SpeakerId = Brand<number, "SpeakerId">;
+export type TimerId = Brand<number, "TimerId">;
 export type SessionId = Brand<string, "SessionId">;
 export type AccountId = Brand<string, "AccountId">;
-export type EventParticipantId = Brand<string, "EventParticipantId">;
 export type VerificationId = Brand<string, "VerificationId">;
 
 // === ID作成関数 ===
@@ -75,6 +78,6 @@ export function isUserId(id: string): id is UserId {
   return isValidUUID(id);
 }
 
-export function isEventId(id: string): id is EventId {
-  return isValidUUID(id);
+export function isEventId(id: number): id is EventId {
+  return Number.isInteger(id) && id > 0;
 }

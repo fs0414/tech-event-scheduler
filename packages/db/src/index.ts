@@ -8,7 +8,7 @@
  * ```
  * Consumer (API Routes)
  *     ↓
- * Repositories (EventRepository, UserRepository, etc.)
+ * Repositories (EventRepository, OwnerRepository, etc.)
  *     ↓
  * DatabaseAdapter (抽象インターフェース)
  *     ↓
@@ -32,7 +32,7 @@
  * const adapter = createDatabaseAdapter(env);
  *
  * // リポジトリを作成
- * const { events, users } = createRepositories(adapter);
+ * const { events, users, owners } = createRepositories(adapter);
  *
  * // リポジトリを使用
  * const event = await events.findById(id);
@@ -54,17 +54,23 @@ export {
   createRepositories,
   createUnitOfWork,
   createEventRepository,
-  createEventParticipantRepository,
+  createOwnerRepository,
+  createArticleRepository,
+  createSpeakerRepository,
+  createTimerRepository,
   createUserRepository,
   type Repositories,
   type UnitOfWork,
   type EventRepository,
-  type EventParticipantRepository,
+  type OwnerRepository,
+  type ArticleRepository,
+  type SpeakerRepository,
+  type TimerRepository,
   type UserRepository,
   type EventSearchCriteria,
   type PaginationOptions,
-  type EventWithOrganizer,
-  type ParticipantWithUser,
+  type OwnerWithUser,
+  type SpeakerWithDetails,
 } from "./repositories";
 
 // === Schema ===
