@@ -41,15 +41,30 @@ export function GoogleSignInButton() {
     <Button
       onClick={handleClick}
       isLoading={loading}
-      size={{ base: "lg", md: "lg" }}
+      size="lg"
       w="100%"
       variant="outline"
       borderColor="gray.300"
-      _hover={{ bg: "gray.50" }}
+      transition="all 0.2s"
+      _hover={{
+        bg: "gray.100",
+        borderColor: "gray.400",
+      }}
+      _focus={{
+        borderColor: "cyan.500",
+        boxShadow: "0 0 0 1px var(--ui-colors-cyan-500)",
+      }}
+      _dark={{
+        borderColor: "gray.600",
+        _hover: {
+          bg: "gray.800",
+          borderColor: "gray.500",
+        },
+      }}
     >
       <HStack gap={3}>
         <GoogleIcon />
-        <Text>Googleでログイン</Text>
+        <Text fontWeight="500">Googleでログイン</Text>
       </HStack>
     </Button>
   );
