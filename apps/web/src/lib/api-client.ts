@@ -7,10 +7,15 @@ import {
   type EventResponse,
   type Success,
   type Failure,
+  type AuthSession,
+  type AuthUser,
   API_ERROR_CODES,
   success,
   failure,
   isSuccess,
+  isObject,
+  isAuthSession,
+  isSessionResponse,
 } from "@tech-event-scheduler/shared";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8787";
@@ -22,31 +27,28 @@ export const edenClient = treaty<App>(API_BASE_URL, {
 });
 
 function isApiError(value: unknown): value is ApiError {
-  if (typeof value !== "object" || value === null) {
+  if (!isObject(value)) {
     return false;
   }
-  const obj = value as Record<string, unknown>;
   return (
-    typeof obj.code === "string" &&
-    Object.values(API_ERROR_CODES).includes(obj.code as ApiErrorCode) &&
-    typeof obj.message === "string"
+    typeof value.code === "string" &&
+    Object.values(API_ERROR_CODES).includes(value.code as ApiErrorCode) &&
+    typeof value.message === "string"
   );
 }
 
 function isSuccessResult<T>(value: unknown): value is Success<T> {
-  if (typeof value !== "object" || value === null) {
+  if (!isObject(value)) {
     return false;
   }
-  const obj = value as Record<string, unknown>;
-  return obj.success === true && "data" in obj;
+  return value.success === true && "data" in value;
 }
 
 function isFailureResult(value: unknown): value is Failure<ApiError> {
-  if (typeof value !== "object" || value === null) {
+  if (!isObject(value)) {
     return false;
   }
-  const obj = value as Record<string, unknown>;
-  return obj.success === false && "error" in obj && isApiError(obj.error);
+  return value.success === false && "error" in value && isApiError(value.error);
 }
 
 function isResultType<T>(value: unknown): value is ApiResponse<T> {
@@ -54,11 +56,8 @@ function isResultType<T>(value: unknown): value is ApiResponse<T> {
 }
 
 function extractErrorMessage(value: unknown): string {
-  if (typeof value === "object" && value !== null) {
-    const obj = value as Record<string, unknown>;
-    if (typeof obj.message === "string") {
-      return obj.message;
-    }
+  if (isObject(value) && typeof value.message === "string") {
+    return value.message;
   }
   if (typeof value === "string") {
     return value;
@@ -153,50 +152,8 @@ export interface RegisterInput {
   name: string;
 }
 
-export interface AuthUser {
-  id: string;
-  email: string;
-  name: string;
-  image: string | null;
-  emailVerified: boolean;
-}
-
-export interface AuthSession {
-  user: AuthUser;
-  session: {
-    id: string;
-    expiresAt: string;
-  };
-}
-
-function isAuthSession(value: unknown): value is AuthSession {
-  if (typeof value !== "object" || value === null) {
-    return false;
-  }
-  const obj = value as Record<string, unknown>;
-
-  if (typeof obj.user !== "object" || obj.user === null) {
-    return false;
-  }
-  const user = obj.user as Record<string, unknown>;
-  if (
-    typeof user.id !== "string" ||
-    typeof user.email !== "string" ||
-    typeof user.name !== "string"
-  ) {
-    return false;
-  }
-
-  if (typeof obj.session !== "object" || obj.session === null) {
-    return false;
-  }
-  const session = obj.session as Record<string, unknown>;
-  if (typeof session.id !== "string" || typeof session.expiresAt !== "string") {
-    return false;
-  }
-
-  return true;
-}
+// AuthUser, AuthSession, isAuthSession は @tech-event-scheduler/shared から re-export
+export type { AuthUser, AuthSession };
 
 async function authRequest<T>(
   path: string,
@@ -242,16 +199,13 @@ async function authRequest<T>(
 }
 
 function isLogoutResponse(value: unknown): value is { success: true } {
-  if (typeof value !== "object" || value === null) {
+  if (!isObject(value)) {
     return false;
   }
-  const obj = value as Record<string, unknown>;
-  return obj.success === true;
+  return value.success === true;
 }
 
-function isSessionResponse(value: unknown): value is AuthSession | null {
-  return value === null || isAuthSession(value);
-}
+// isSessionResponse は @tech-event-scheduler/shared から import 済み
 
 export const authApi = {
   async login(input: LoginInput): Promise<ApiResponse<AuthSession>> {

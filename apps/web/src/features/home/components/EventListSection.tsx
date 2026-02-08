@@ -20,12 +20,15 @@ interface EventListSectionProps {
   readonly onRefresh: () => void;
 }
 
+const SKELETON_COUNT = 6;
+
 export function EventListSection({
   events,
   loading,
   error,
   onRefresh,
 }: EventListSectionProps) {
+  // TODO: イベント詳細ページへの遷移を実装
   const handleViewDetails = useCallback((eventId: number) => {
     console.log(`View event: ${eventId}`);
   }, []);
@@ -56,24 +59,17 @@ export function EventListSection({
       </HStack>
 
       <SimpleGrid minChildWidth="280px" gap={{ base: 3, md: 4 }}>
-        {loading ? (
-          <>
-            <EventCardSkeleton />
-            <EventCardSkeleton />
-            <EventCardSkeleton />
-            <EventCardSkeleton />
-            <EventCardSkeleton />
-            <EventCardSkeleton />
-          </>
-        ) : (
-          events.map((event) => (
-            <SimpleEventCard
-              key={event.id}
-              event={event}
-              onViewDetails={() => handleViewDetails(event.id)}
-            />
-          ))
-        )}
+        {loading
+          ? Array.from({ length: SKELETON_COUNT }).map((_, i) => (
+              <EventCardSkeleton key={`skeleton-${i}`} />
+            ))
+          : events.map((event) => (
+              <SimpleEventCard
+                key={event.id}
+                event={event}
+                onViewDetails={() => handleViewDetails(event.id)}
+              />
+            ))}
       </SimpleGrid>
     </VStack>
   );

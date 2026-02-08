@@ -7,6 +7,7 @@ import { EventListSection } from "./EventListSection";
 export function HomePage() {
   const { events, loading, error, refetch } = useEvents();
 
+  // TODO: イベント作成モーダル/ページへの遷移を実装
   const handleCreateEvent = useCallback(() => {
     console.log("Create event");
   }, []);
