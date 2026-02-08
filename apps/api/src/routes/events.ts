@@ -1,4 +1,5 @@
 import { Elysia } from "elysia";
+import type { z } from "zod";
 import type { EventRepository, OwnerRepository } from "@tech-event-scheduler/db";
 import { success } from "@tech-event-scheduler/shared";
 import {
@@ -18,6 +19,14 @@ import {
 export interface EventRoutesDeps {
   readonly events: EventRepository;
   readonly owners: OwnerRepository;
+}
+
+function validateBody<T>(schema: z.ZodSchema<T>, body: unknown): T {
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) {
+    throw AppError.validationError("無効なリクエストです", parsed.error.flatten());
+  }
+  return parsed.data;
 }
 
 const withEventId = new Elysia({ name: "with-event-id" })
@@ -49,19 +58,13 @@ export const createEventsRoutes = (deps: EventRoutesDeps) =>
     .use(withEventId)
     .get("/:id", ({ eventId }) => getEvent(deps, eventId))
     .post("/", async ({ body, set }) => {
-      const parsed = createEventSchema.safeParse(body);
-      if (!parsed.success) {
-        throw AppError.validationError("無効なリクエストです", parsed.error.flatten());
-      }
+      const data = validateBody(createEventSchema, body);
       set.status = 201;
-      return createEvent(deps, parsed.data);
+      return createEvent(deps, data);
     })
     .patch("/:id", ({ eventId, body }) => {
-      const parsed = updateEventSchema.safeParse(body);
-      if (!parsed.success) {
-        throw AppError.validationError("無効なリクエストです", parsed.error.flatten());
-      }
-      return updateEvent(deps, { id: eventId, ...parsed.data });
+      const data = validateBody(updateEventSchema, body);
+      return updateEvent(deps, { id: eventId, ...data });
     })
     .delete("/:id", ({ eventId }) => deleteEvent(deps, eventId));
 

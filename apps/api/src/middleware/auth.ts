@@ -4,6 +4,24 @@ import type { AuthenticatedSession } from "../types";
 
 type SessionResult = Awaited<ReturnType<Auth["api"]["getSession"]>>;
 
+function mapSessionResultToAuthenticatedSession(
+  sessionResult: NonNullable<SessionResult>
+): AuthenticatedSession {
+  return {
+    user: {
+      id: sessionResult.user.id,
+      email: sessionResult.user.email,
+      name: sessionResult.user.name,
+      image: sessionResult.user.image ?? null,
+      emailVerified: sessionResult.user.emailVerified,
+    },
+    session: {
+      id: sessionResult.session.id,
+      expiresAt: sessionResult.session.expiresAt,
+    },
+  };
+}
+
 export const createAuthMiddleware = (auth: Auth) =>
   new Elysia({ name: "auth-middleware" }).derive(
     async ({ request }): Promise<{ session: AuthenticatedSession | null }> => {
@@ -16,22 +34,13 @@ export const createAuthMiddleware = (auth: Auth) =>
           return { session: null };
         }
 
-        const authenticatedSession: AuthenticatedSession = {
-          user: {
-            id: sessionResult.user.id,
-            email: sessionResult.user.email,
-            name: sessionResult.user.name,
-            image: sessionResult.user.image ?? null,
-            emailVerified: sessionResult.user.emailVerified,
-          },
-          session: {
-            id: sessionResult.session.id,
-            expiresAt: sessionResult.session.expiresAt,
-          },
-        };
-
-        return { session: authenticatedSession };
-      } catch {
+        return { session: mapSessionResultToAuthenticatedSession(sessionResult) };
+      } catch (error) {
+        // デバッグ可能なようにエラーをログ
+        console.warn(
+          "Auth session retrieval failed:",
+          error instanceof Error ? error.message : String(error)
+        );
         return { session: null };
       }
     }
@@ -50,20 +59,12 @@ export async function requireAuth(
       return null;
     }
 
-    return {
-      user: {
-        id: sessionResult.user.id,
-        email: sessionResult.user.email,
-        name: sessionResult.user.name,
-        image: sessionResult.user.image ?? null,
-        emailVerified: sessionResult.user.emailVerified,
-      },
-      session: {
-        id: sessionResult.session.id,
-        expiresAt: sessionResult.session.expiresAt,
-      },
-    };
-  } catch {
+    return mapSessionResultToAuthenticatedSession(sessionResult);
+  } catch (error) {
+    console.warn(
+      "Auth requireAuth failed:",
+      error instanceof Error ? error.message : String(error)
+    );
     return null;
   }
 }
