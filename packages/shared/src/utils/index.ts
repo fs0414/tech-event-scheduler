@@ -4,7 +4,8 @@ import { toISO8601 } from "../types/datetime";
 import type { EventResponse } from "../types";
 
 export function formatDate(date: Date): string {
-  return date.toISOString().split("T")[0]!;
+  const isoString = date.toISOString();
+  return isoString.split("T")[0] ?? isoString.slice(0, 10);
 }
 
 export function formatDateTime(date: Date): string {

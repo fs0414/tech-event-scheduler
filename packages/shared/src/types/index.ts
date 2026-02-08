@@ -3,6 +3,7 @@ export * from "./result";
 export * from "./api";
 export * from "./enums";
 export * from "./datetime";
+export * from "./guards";
 
 import type {
   EventId,
