@@ -156,4 +156,4 @@ task deploy:web       # WebをCloudflare Pagesにデプロイ
 
 ## 本番環境URL
 
-https://tech-event-scheduler-web.workers.dev
+- https://tech-event-scheduler-web.fujitanisora0414.workers.dev/
