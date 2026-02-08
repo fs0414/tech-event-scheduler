@@ -1,25 +1,23 @@
-/**
- * User Repository 実装
- */
-
 import { eq } from "drizzle-orm";
-import type { DatabaseAdapter } from "../adapters/types";
 import { user } from "../schema";
 import type { User } from "../schema";
-import type { UserRepository } from "./types";
+import type { Database } from "./common";
 
-/**
- * UserRepository の Drizzle 実装
- */
+export interface UserRepository {
+  findById(id: string): Promise<User | undefined>;
+  findByEmail(email: string): Promise<User | undefined>;
+  exists(id: string): Promise<boolean>;
+}
+
 export class DrizzleUserRepository implements UserRepository {
-  constructor(private readonly adapter: DatabaseAdapter) {}
+  constructor(private readonly db: Database) {}
 
   async findById(id: string): Promise<User | undefined> {
-    return this.adapter.select(user).where(eq(user.id, id)).get();
+    return this.db.select().from(user).where(eq(user.id, id)).get();
   }
 
   async findByEmail(email: string): Promise<User | undefined> {
-    return this.adapter.select(user).where(eq(user.email, email)).get();
+    return this.db.select().from(user).where(eq(user.email, email)).get();
   }
 
   async exists(id: string): Promise<boolean> {
@@ -28,9 +26,6 @@ export class DrizzleUserRepository implements UserRepository {
   }
 }
 
-/**
- * UserRepository を作成
- */
-export function createUserRepository(adapter: DatabaseAdapter): UserRepository {
-  return new DrizzleUserRepository(adapter);
+export function createUserRepository(db: Database): UserRepository {
+  return new DrizzleUserRepository(db);
 }

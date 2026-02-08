@@ -1,13 +1,7 @@
-/**
- * ユーティリティ関数
- */
-
 import type { UserId, Brand } from "../types/branded";
 import { createId } from "../types/branded";
 import { toISO8601 } from "../types/datetime";
 import type { EventResponse } from "../types";
-
-// === 日付フォーマット ===
 
 export function formatDate(date: Date): string {
   return date.toISOString().split("T")[0]!;
@@ -25,34 +19,15 @@ export function parseDate(dateString: string): Date {
   return date;
 }
 
-// === バリデーション ===
-
 export function isValidEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
 
-// === ID生成（後方互換性のため残す） ===
-
-/**
- * @deprecated createId<UserId>() を使用してください
- */
-export function generateId(): string {
-  return crypto.randomUUID();
-}
-
-/**
- * 型付きID生成関数
- */
 export function generateUserId(): UserId {
   return createId<UserId>();
 }
 
-// === オブジェクトユーティリティ ===
-
-/**
- * オブジェクトからundefinedの値を持つキーを除去
- */
 export function omitUndefined<T extends Record<string, unknown>>(
   obj: T
 ): Partial<T> {
@@ -61,9 +36,6 @@ export function omitUndefined<T extends Record<string, unknown>>(
   ) as Partial<T>;
 }
 
-/**
- * Pick型のランタイム版
- */
 export function pick<T extends Record<string, unknown>, K extends keyof T>(
   obj: T,
   keys: readonly K[]
@@ -79,9 +51,6 @@ export function pick<T extends Record<string, unknown>, K extends keyof T>(
   );
 }
 
-/**
- * Omit型のランタイム版
- */
 export function omit<T extends Record<string, unknown>, K extends keyof T>(
   obj: T,
   keys: readonly K[]
@@ -92,11 +61,6 @@ export function omit<T extends Record<string, unknown>, K extends keyof T>(
   ) as Omit<T, K>;
 }
 
-// === 型変換ユーティリティ ===
-
-/**
- * エンティティをレスポンス型に変換（日付をISO文字列に）
- */
 export function toResponse<T extends { createdAt: Date; updatedAt: Date }>(
   entity: T
 ): Omit<T, "createdAt" | "updatedAt"> & {
@@ -110,10 +74,6 @@ export function toResponse<T extends { createdAt: Date; updatedAt: Date }>(
   };
 }
 
-/**
- * イベントエンティティをEventResponse型に変換
- * 日時フィールドはISO8601 UTC形式に変換
- */
 export function eventToResponse(event: {
   id: number | Brand<number, string>;
   title: string;
@@ -132,11 +92,6 @@ export function eventToResponse(event: {
   };
 }
 
-// === Exhaustive Check ===
-
-/**
- * switch文の網羅性チェック用
- */
 export function assertNever(value: never): never {
   throw new Error(`Unexpected value: ${value}`);
 }

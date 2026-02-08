@@ -24,6 +24,8 @@ services:
       - CORS_ORIGIN=http://localhost:3040
       - BETTER_AUTH_SECRET=dev-secret-change-in-production
       - BETTER_AUTH_URL=http://localhost:3050
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
     depends_on:
       - db
     develop:

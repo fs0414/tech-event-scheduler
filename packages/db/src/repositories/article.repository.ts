@@ -1,60 +1,41 @@
-/**
- * Article Repository 実装
- */
-
 import { eq, desc } from "drizzle-orm";
-import type { DatabaseAdapter } from "../adapters/types";
 import { article } from "../schema";
 import type { Article, NewArticle, UpdateArticle } from "../schema";
-import type { ArticleRepository, PaginationOptions } from "./types";
+import type { Database, PaginationOptions } from "./common";
+
+export interface ArticleRepository {
+  findById(id: number): Promise<Article | undefined>;
+  findAll(options?: PaginationOptions): Promise<readonly Article[]>;
+  create(data: NewArticle): Promise<Article>;
+  update(id: number, data: UpdateArticle): Promise<Article | undefined>;
+  delete(id: number): Promise<boolean>;
+}
 
 export class DrizzleArticleRepository implements ArticleRepository {
-  constructor(private readonly adapter: DatabaseAdapter) {}
+  constructor(private readonly db: Database) {}
 
   async findById(id: number): Promise<Article | undefined> {
-    return this.adapter.select(article).where(eq(article.id, id)).get();
+    return this.db.select().from(article).where(eq(article.id, id)).get();
   }
 
   async findAll(_options?: PaginationOptions): Promise<readonly Article[]> {
-    return this.adapter
-      .select(article)
-      .orderBy(desc(article.createdAt))
-      .all();
+    return this.db.select().from(article).orderBy(desc(article.createdAt)).all();
   }
 
   async create(data: NewArticle): Promise<Article> {
-    const result = await this.adapter.insert(article, data);
-    const insertedId = Number(result.lastInsertRowid);
-    const created = await this.findById(insertedId);
-    if (!created) {
-      throw new Error("Failed to create article");
-    }
-    return created;
+    return this.db.insert(article).values(data).returning().get();
   }
 
   async update(id: number, data: UpdateArticle): Promise<Article | undefined> {
-    const existing = await this.findById(id);
-    if (!existing) {
-      return undefined;
-    }
-
-    await this.adapter.update(article, data, eq(article.id, id));
-    return this.findById(id);
+    return this.db.update(article).set(data).where(eq(article.id, id)).returning().get();
   }
 
   async delete(id: number): Promise<boolean> {
-    const existing = await this.findById(id);
-    if (!existing) {
-      return false;
-    }
-
-    await this.adapter.delete(article, eq(article.id, id));
-    return true;
+    const result = await this.db.delete(article).where(eq(article.id, id)).returning().get();
+    return result !== undefined;
   }
 }
 
-export function createArticleRepository(
-  adapter: DatabaseAdapter
-): ArticleRepository {
-  return new DrizzleArticleRepository(adapter);
+export function createArticleRepository(db: Database): ArticleRepository {
+  return new DrizzleArticleRepository(db);
 }

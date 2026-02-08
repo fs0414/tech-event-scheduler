@@ -1,136 +1,146 @@
-/**
- * 型安全なAPIクライアント
- */
-
+import { treaty } from "@elysiajs/eden";
+import type { App } from "@tech-event-scheduler/api";
 import {
   type ApiResponse,
-  type EventResponse,
-  type CreateEventInput,
-  type UpdateEventInput,
   type ApiError,
+  type ApiErrorCode,
+  type EventResponse,
+  type Success,
+  type Failure,
+  API_ERROR_CODES,
   success,
   failure,
   isSuccess,
 } from "@tech-event-scheduler/shared";
 
-// === 設定 ===
-
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8787";
 
-// === HTTPクライアント ===
+export const edenClient = treaty<App>(API_BASE_URL, {
+  fetch: {
+    credentials: "include",
+  },
+});
 
-interface RequestOptions extends Omit<RequestInit, "body"> {
-  body?: unknown;
-}
-
-async function request<T>(
-  path: string,
-  options: RequestOptions = {}
-): Promise<ApiResponse<T>> {
-  const { body, headers: customHeaders, ...restOptions } = options;
-
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
-    ...customHeaders,
-  };
-
-  try {
-    const response = await fetch(`${API_BASE_URL}${path}`, {
-      ...restOptions,
-      headers,
-      body: body ? JSON.stringify(body) : undefined,
-      credentials: "include",
-    });
-
-    const data: unknown = await response.json();
-
-    // APIがResult型で返す場合
-    if (
-      typeof data === "object" &&
-      data !== null &&
-      "success" in data &&
-      typeof (data as { success: unknown }).success === "boolean"
-    ) {
-      return data as ApiResponse<T>;
-    }
-
-    // 直接データが返ってくる場合（レガシー対応）
-    if (response.ok) {
-      return success(data as T);
-    }
-
-    // エラーレスポンス
-    const errorData = data as { message?: string; details?: unknown } | null;
-    const apiError: ApiError = {
-      code: "INTERNAL_ERROR",
-      message: errorData?.message ?? "リクエストに失敗しました",
-      details:
-        typeof errorData?.details === "object" && errorData.details !== null
-          ? (errorData.details as Record<string, unknown>)
-          : undefined,
-    };
-    return failure(apiError);
-  } catch (error) {
-    const apiError: ApiError = {
-      code: "INTERNAL_ERROR",
-      message:
-        error instanceof Error ? error.message : "ネットワークエラーが発生しました",
-    };
-    return failure(apiError);
+function isApiError(value: unknown): value is ApiError {
+  if (typeof value !== "object" || value === null) {
+    return false;
   }
+  const obj = value as Record<string, unknown>;
+  return (
+    typeof obj.code === "string" &&
+    Object.values(API_ERROR_CODES).includes(obj.code as ApiErrorCode) &&
+    typeof obj.message === "string"
+  );
 }
 
-// === イベントAPI ===
+function isSuccessResult<T>(value: unknown): value is Success<T> {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  const obj = value as Record<string, unknown>;
+  return obj.success === true && "data" in obj;
+}
+
+function isFailureResult(value: unknown): value is Failure<ApiError> {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  const obj = value as Record<string, unknown>;
+  return obj.success === false && "error" in obj && isApiError(obj.error);
+}
+
+function isResultType<T>(value: unknown): value is ApiResponse<T> {
+  return isSuccessResult<T>(value) || isFailureResult(value);
+}
+
+function extractErrorMessage(value: unknown): string {
+  if (typeof value === "object" && value !== null) {
+    const obj = value as Record<string, unknown>;
+    if (typeof obj.message === "string") {
+      return obj.message;
+    }
+  }
+  if (typeof value === "string") {
+    return value;
+  }
+  return "リクエストに失敗しました";
+}
+
+function toApiResponse<T, EdenData = unknown>(result: {
+  data: EdenData;
+  error: { value: unknown } | null;
+}): ApiResponse<T> {
+  if (result.error) {
+    return failure({
+      code: "INTERNAL_ERROR",
+      message: extractErrorMessage(result.error.value),
+    });
+  }
+
+  if (result.data === null || result.data === undefined) {
+    return failure({
+      code: "INTERNAL_ERROR",
+      message: "レスポンスデータがありません",
+    });
+  }
+
+  const data: unknown = result.data;
+
+  if (isResultType<T>(data)) {
+    if (isSuccessResult<T>(data)) {
+      return success(data.data);
+    }
+    return data;
+  }
+
+  return success(data as T);
+}
 
 export const eventsApi = {
-  /**
-   * イベント一覧を取得
-   */
   async list(): Promise<ApiResponse<readonly EventResponse[]>> {
-    return request<readonly EventResponse[]>("/api/events");
+    const result = await edenClient.api.events.get();
+    return toApiResponse<readonly EventResponse[]>(result);
   },
 
-  /**
-   * イベント詳細を取得
-   */
   async get(id: string): Promise<ApiResponse<EventResponse>> {
-    return request<EventResponse>(`/api/events/${id}`);
+    const result = await edenClient.api.events({ id }).get();
+    return toApiResponse<EventResponse>(result);
   },
 
-  /**
-   * イベントを作成
-   */
-  async create(input: CreateEventInput): Promise<ApiResponse<EventResponse>> {
-    return request<EventResponse>("/api/events", {
-      method: "POST",
-      body: input,
-    });
+  async create(input: {
+    title: string;
+    eventUrl?: string;
+  }): Promise<ApiResponse<EventResponse>> {
+    const result = await edenClient.api.events.post(input);
+    return toApiResponse<EventResponse>(result);
   },
 
-  /**
-   * イベントを更新
-   */
   async update(
     id: string,
-    input: UpdateEventInput
+    input: { title?: string; eventUrl?: string | null; attendance?: number }
   ): Promise<ApiResponse<EventResponse>> {
-    return request<EventResponse>(`/api/events/${id}`, {
-      method: "PATCH",
-      body: input,
-    });
+    const result = await edenClient.api.events({ id }).patch(input);
+    return toApiResponse<EventResponse>(result);
   },
 
-  /**
-   * イベントを削除
-   */
   async delete(id: string): Promise<ApiResponse<{ deleted: true }>> {
-    return request<{ deleted: true }>(`/api/events/${id}`, {
-      method: "DELETE",
-    });
+    const result = await edenClient.api.events({ id }).delete();
+    return toApiResponse<{ deleted: true }>(result);
   },
 } as const;
 
-// === 認証API ===
+export interface HealthStatus {
+  status: "ok" | "degraded" | "error";
+  timestamp: string;
+  version?: string;
+}
+
+export const healthApi = {
+  async check(): Promise<ApiResponse<HealthStatus>> {
+    const result = await edenClient.health.get();
+    return toApiResponse<HealthStatus>(result);
+  },
+} as const;
 
 export interface LoginInput {
   email: string;
@@ -159,62 +169,142 @@ export interface AuthSession {
   };
 }
 
-export const authApi = {
-  /**
-   * ログイン
-   */
-  async login(input: LoginInput): Promise<ApiResponse<AuthSession>> {
-    return request<AuthSession>("/api/auth/sign-in/email", {
-      method: "POST",
-      body: input,
-    });
-  },
+function isAuthSession(value: unknown): value is AuthSession {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  const obj = value as Record<string, unknown>;
 
-  /**
-   * 新規登録
-   */
-  async register(input: RegisterInput): Promise<ApiResponse<AuthSession>> {
-    return request<AuthSession>("/api/auth/sign-up/email", {
-      method: "POST",
-      body: input,
-    });
-  },
+  if (typeof obj.user !== "object" || obj.user === null) {
+    return false;
+  }
+  const user = obj.user as Record<string, unknown>;
+  if (
+    typeof user.id !== "string" ||
+    typeof user.email !== "string" ||
+    typeof user.name !== "string"
+  ) {
+    return false;
+  }
 
-  /**
-   * ログアウト
-   */
-  async logout(): Promise<ApiResponse<{ success: true }>> {
-    return request<{ success: true }>("/api/auth/sign-out", {
-      method: "POST",
-    });
-  },
+  if (typeof obj.session !== "object" || obj.session === null) {
+    return false;
+  }
+  const session = obj.session as Record<string, unknown>;
+  if (typeof session.id !== "string" || typeof session.expiresAt !== "string") {
+    return false;
+  }
 
-  /**
-   * 現在のセッションを取得
-   */
-  async getSession(): Promise<ApiResponse<AuthSession | null>> {
-    return request<AuthSession | null>("/api/auth/get-session");
-  },
-} as const;
-
-// === ヘルスチェックAPI ===
-
-export interface HealthStatus {
-  status: "ok" | "degraded" | "error";
-  timestamp: string;
-  version?: string;
+  return true;
 }
 
-export const healthApi = {
-  /**
-   * ヘルスチェック
-   */
-  async check(): Promise<ApiResponse<HealthStatus>> {
-    return request<HealthStatus>("/health");
+async function authRequest<T>(
+  path: string,
+  options: RequestInit = {},
+  validator?: (value: unknown) => value is T
+): Promise<ApiResponse<T>> {
+  try {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+      credentials: "include",
+    });
+
+    const data: unknown = await response.json();
+
+    if (response.ok) {
+      if (validator) {
+        if (validator(data)) {
+          return success(data);
+        }
+        return failure({
+          code: "INTERNAL_ERROR",
+          message: "レスポンス形式が不正です",
+        });
+      }
+      return success(data as T);
+    }
+
+    return failure({
+      code: "INTERNAL_ERROR",
+      message: extractErrorMessage(data) || "認証リクエストに失敗しました",
+    });
+  } catch (error) {
+    return failure({
+      code: "INTERNAL_ERROR",
+      message:
+        error instanceof Error ? error.message : "ネットワークエラーが発生しました",
+    });
+  }
+}
+
+function isLogoutResponse(value: unknown): value is { success: true } {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  const obj = value as Record<string, unknown>;
+  return obj.success === true;
+}
+
+function isSessionResponse(value: unknown): value is AuthSession | null {
+  return value === null || isAuthSession(value);
+}
+
+export const authApi = {
+  async login(input: LoginInput): Promise<ApiResponse<AuthSession>> {
+    return authRequest<AuthSession>(
+      "/api/auth/sign-in/email",
+      { method: "POST", body: JSON.stringify(input) },
+      isAuthSession
+    );
+  },
+
+  async register(input: RegisterInput): Promise<ApiResponse<AuthSession>> {
+    return authRequest<AuthSession>(
+      "/api/auth/sign-up/email",
+      { method: "POST", body: JSON.stringify(input) },
+      isAuthSession
+    );
+  },
+
+  async logout(): Promise<ApiResponse<{ success: true }>> {
+    return authRequest<{ success: true }>(
+      "/api/auth/sign-out",
+      { method: "POST" },
+      isLogoutResponse
+    );
+  },
+
+  async getSession(): Promise<ApiResponse<AuthSession | null>> {
+    return authRequest<AuthSession | null>(
+      "/api/auth/get-session",
+      {},
+      isSessionResponse
+    );
+  },
+
+  async signInWithGoogle(): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/api/auth/sign-in/social`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        provider: "google",
+        callbackURL: window.location.origin,
+      }),
+    });
+
+    const data = (await response.json()) as { url?: string };
+    if (data.url) {
+      window.location.href = data.url;
+    }
   },
 } as const;
-
-// === 統合API ===
 
 export const api = {
   events: eventsApi,
@@ -224,18 +314,10 @@ export const api = {
 
 export type Api = typeof api;
 
-// === ユーティリティ関数 ===
-
-/**
- * APIレスポンスからデータを取得（エラー時はnull）
- */
 export function unwrapOrNull<T>(response: ApiResponse<T>): T | null {
   return isSuccess(response) ? response.data : null;
 }
 
-/**
- * APIレスポンスからデータを取得（エラー時は例外）
- */
 export function unwrapOrThrow<T>(response: ApiResponse<T>): T {
   if (isSuccess(response)) {
     return response.data;

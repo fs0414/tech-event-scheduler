@@ -1,88 +1,70 @@
-/**
- * Speaker Repository 実装
- */
-
 import { eq, and } from "drizzle-orm";
-import type { DatabaseAdapter } from "../adapters/types";
 import { speaker } from "../schema";
-import type { Speaker, NewSpeaker, UpdateSpeaker } from "../schema";
-import type { SpeakerRepository } from "./types";
+import type { Speaker, NewSpeaker, UpdateSpeaker, User, Article } from "../schema";
+import type { Database } from "./common";
+
+export interface SpeakerWithDetails extends Speaker {
+  readonly user: User;
+  readonly article?: Article;
+}
+
+export interface SpeakerRepository {
+  findById(id: number): Promise<Speaker | undefined>;
+  findByEventId(eventId: number): Promise<readonly Speaker[]>;
+  findByUserId(userId: string): Promise<readonly Speaker[]>;
+  findByEventAndUser(eventId: number, userId: string): Promise<Speaker | undefined>;
+  create(data: NewSpeaker): Promise<Speaker>;
+  update(id: number, data: UpdateSpeaker): Promise<Speaker | undefined>;
+  delete(id: number): Promise<boolean>;
+  deleteByEventId(eventId: number): Promise<number>;
+}
 
 export class DrizzleSpeakerRepository implements SpeakerRepository {
-  constructor(private readonly adapter: DatabaseAdapter) {}
+  constructor(private readonly db: Database) {}
 
   async findById(id: number): Promise<Speaker | undefined> {
-    return this.adapter.select(speaker).where(eq(speaker.id, id)).get();
+    return this.db.select().from(speaker).where(eq(speaker.id, id)).get();
   }
 
   async findByEventId(eventId: number): Promise<readonly Speaker[]> {
-    return this.adapter
-      .select(speaker)
-      .where(eq(speaker.eventId, eventId))
-      .all();
+    return this.db.select().from(speaker).where(eq(speaker.eventId, eventId)).all();
   }
 
   async findByUserId(userId: string): Promise<readonly Speaker[]> {
-    return this.adapter
-      .select(speaker)
-      .where(eq(speaker.userId, userId))
-      .all();
+    return this.db.select().from(speaker).where(eq(speaker.userId, userId)).all();
   }
 
-  async findByEventAndUser(
-    eventId: number,
-    userId: string
-  ): Promise<Speaker | undefined> {
-    return this.adapter
-      .select(speaker)
+  async findByEventAndUser(eventId: number, userId: string): Promise<Speaker | undefined> {
+    return this.db
+      .select()
+      .from(speaker)
       .where(and(eq(speaker.eventId, eventId), eq(speaker.userId, userId)))
       .get();
   }
 
   async create(data: NewSpeaker): Promise<Speaker> {
-    const result = await this.adapter.insert(speaker, data);
-    const insertedId = Number(result.lastInsertRowid);
-    const created = await this.findById(insertedId);
-    if (!created) {
-      throw new Error("Failed to create speaker");
-    }
-    return created;
+    return this.db.insert(speaker).values(data).returning().get();
   }
 
   async update(id: number, data: UpdateSpeaker): Promise<Speaker | undefined> {
-    const existing = await this.findById(id);
-    if (!existing) {
-      return undefined;
-    }
-
-    await this.adapter.update(speaker, data, eq(speaker.id, id));
-    return this.findById(id);
+    return this.db.update(speaker).set(data).where(eq(speaker.id, id)).returning().get();
   }
 
   async delete(id: number): Promise<boolean> {
-    const existing = await this.findById(id);
-    if (!existing) {
-      return false;
-    }
-
-    await this.adapter.delete(speaker, eq(speaker.id, id));
-    return true;
+    const result = await this.db.delete(speaker).where(eq(speaker.id, id)).returning().get();
+    return result !== undefined;
   }
 
   async deleteByEventId(eventId: number): Promise<number> {
-    const speakers = await this.findByEventId(eventId);
-    const count = speakers.length;
-
-    if (count > 0) {
-      await this.adapter.delete(speaker, eq(speaker.eventId, eventId));
-    }
-
-    return count;
+    const result = await this.db
+      .delete(speaker)
+      .where(eq(speaker.eventId, eventId))
+      .returning()
+      .all();
+    return result.length;
   }
 }
 
-export function createSpeakerRepository(
-  adapter: DatabaseAdapter
-): SpeakerRepository {
-  return new DrizzleSpeakerRepository(adapter);
+export function createSpeakerRepository(db: Database): SpeakerRepository {
+  return new DrizzleSpeakerRepository(db);
 }

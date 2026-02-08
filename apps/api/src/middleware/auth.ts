@@ -1,19 +1,9 @@
-/**
- * 認証ミドルウェア
- */
-
 import { Elysia } from "elysia";
 import type { Auth } from "../auth";
 import type { AuthenticatedSession } from "../types";
 
-/**
- * セッションから取得した認証情報の型
- */
 type SessionResult = Awaited<ReturnType<Auth["api"]["getSession"]>>;
 
-/**
- * 認証を必要とするルート用ミドルウェア
- */
 export const createAuthMiddleware = (auth: Auth) =>
   new Elysia({ name: "auth-middleware" }).derive(
     async ({ request }): Promise<{ session: AuthenticatedSession | null }> => {
@@ -47,9 +37,6 @@ export const createAuthMiddleware = (auth: Auth) =>
     }
   );
 
-/**
- * 認証チェック関数（後方互換性のため維持）
- */
 export async function requireAuth(
   auth: Auth,
   request: Request
