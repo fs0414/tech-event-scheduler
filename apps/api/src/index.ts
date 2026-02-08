@@ -1,23 +1,11 @@
-/**
- * Tech Event Scheduler API
- *
- * Cloudflare Workers + Elysia.js による型安全なAPIサーバー
- */
-
 import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
-import {
-  createDatabaseAdapter,
-  createRepositories,
-} from "@tech-event-scheduler/db";
+import { createDatabase, createRepositories } from "@tech-event-scheduler/db";
 import { createAuth, type Auth } from "./auth";
 import { createEventsRoutes, type EventRoutesDeps } from "./routes/events";
 import { healthRoutes } from "./routes/health";
 import type { Env } from "./types";
 
-/**
- * アプリケーションインスタンスを作成
- */
 function createApp(deps: EventRoutesDeps, auth: Auth, corsOrigin: string) {
   return new Elysia()
     .use(
@@ -35,26 +23,14 @@ function createApp(deps: EventRoutesDeps, auth: Auth, corsOrigin: string) {
     });
 }
 
-/**
- * アプリケーション型（エンドポイント型推論用）
- */
 export type App = ReturnType<typeof createApp>;
 
-/**
- * Cloudflare Workers エントリーポイント
- */
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    // DatabaseAdapter を作成
-    const adapter = createDatabaseAdapter(env);
-
-    // リポジトリを作成（DI）
-    const repositories = createRepositories(adapter);
-
-    // 認証を作成
+    const db = createDatabase(env);
+    const repositories = createRepositories(db);
     const auth = createAuth(env);
 
-    // アプリケーションを作成
     const app = createApp(
       { events: repositories.events, owners: repositories.owners },
       auth,

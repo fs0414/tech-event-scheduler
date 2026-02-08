@@ -1,21 +1,11 @@
-/**
- * ヘルスチェックAPIルート
- */
-
 import { Elysia, t } from "elysia";
 
-/**
- * ヘルスチェックレスポンスの型
- */
 interface HealthResponse {
   readonly status: "ok" | "degraded" | "error";
   readonly timestamp: string;
   readonly version?: string;
 }
 
-/**
- * ヘルスチェックルート
- */
 export const healthRoutes = new Elysia({ prefix: "/health" }).get(
   "/",
   (): HealthResponse => ({

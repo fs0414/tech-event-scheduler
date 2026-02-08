@@ -1,7 +1,3 @@
-/**
- * 型安全なエラーハンドリングプラグイン
- */
-
 import { Elysia } from "elysia";
 import {
   type ApiError,
@@ -12,9 +8,6 @@ import {
   failure,
 } from "@tech-event-scheduler/shared";
 
-/**
- * アプリケーションエラークラス
- */
 export class AppError extends Error {
   constructor(
     public readonly apiError: ApiError,
@@ -56,19 +49,14 @@ export class AppError extends Error {
   }
 }
 
-/**
- * エラーハンドリングプラグイン
- */
 export const errorHandlerPlugin = new Elysia({ name: "error-handler" })
   .error({ APP_ERROR: AppError })
   .onError(({ code, error, set }) => {
-    // AppErrorの場合
     if (code === "APP_ERROR" && error instanceof AppError) {
       set.status = error.statusCode;
       return failure(error.apiError);
     }
 
-    // バリデーションエラーの場合
     if (code === "VALIDATION") {
       set.status = 422;
       return failure(
@@ -78,26 +66,17 @@ export const errorHandlerPlugin = new Elysia({ name: "error-handler" })
       );
     }
 
-    // Not Foundの場合
     if (code === "NOT_FOUND") {
       set.status = 404;
       return failure(ApiErrors.notFound("リソース"));
     }
 
-    // その他のエラー
     console.error("Unhandled error:", error);
     set.status = 500;
     return failure(ApiErrors.internalError());
   })
   .derive(() => ({
-    /**
-     * 成功レスポンスを返すヘルパー
-     */
     ok: <T>(data: T): ApiResponse<T> => success(data),
-
-    /**
-     * エラーをスローするヘルパー
-     */
     throw: {
       badRequest: (message: string, details?: Record<string, unknown>) => {
         throw AppError.badRequest(message, details);
