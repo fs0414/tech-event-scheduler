@@ -19,8 +19,6 @@ export {
   article,
   speaker,
   timer,
-  OWNER_ROLES,
-  type OwnerRole,
   type Event,
   type NewEvent,
   type UpdateEvent,
@@ -37,3 +35,6 @@ export {
   type NewTimer,
   type UpdateTimer,
 } from "./events";
+
+// OwnerRole は shared から re-export
+export { OWNER_ROLE, type OwnerRole } from "@tech-event-scheduler/shared";

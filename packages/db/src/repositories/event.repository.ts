@@ -31,10 +31,12 @@ export class DrizzleEventRepository implements EventRepository {
     return this.db.select().from(event).where(eq(event.id, id)).get();
   }
 
+  // TODO: PaginationOptions を実装
   async findAll(_options?: PaginationOptions): Promise<readonly Event[]> {
     return this.db.select().from(event).orderBy(desc(event.createdAt)).all();
   }
 
+  // TODO: PaginationOptions を実装
   async findByCriteria(
     criteria: EventSearchCriteria,
     _options?: PaginationOptions
@@ -50,6 +52,7 @@ export class DrizzleEventRepository implements EventRepository {
     return this.findAll(_options);
   }
 
+  // TODO: PaginationOptions を実装、JOINで最適化を検討
   async findByOwnerId(
     userId: string,
     _options?: PaginationOptions

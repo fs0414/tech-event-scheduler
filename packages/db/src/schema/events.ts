@@ -5,14 +5,8 @@ import {
   uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
+import { OWNER_ROLE, type OwnerRole } from "@tech-event-scheduler/shared";
 import { user } from "./auth";
-
-export const OWNER_ROLES = {
-  ADMIN: 10,
-  MEMBER: 20,
-} as const;
-
-export type OwnerRole = (typeof OWNER_ROLES)[keyof typeof OWNER_ROLES];
 
 export const event = sqliteTable("event", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -39,7 +33,7 @@ export const owner = sqliteTable(
     eventId: integer("event_id")
       .notNull()
       .references(() => event.id),
-    role: integer("role").notNull().default(OWNER_ROLES.MEMBER),
+    role: integer("role").notNull().default(OWNER_ROLE.MEMBER),
     createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
     updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
   },
