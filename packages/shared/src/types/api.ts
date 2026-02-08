@@ -1,10 +1,4 @@
-/**
- * API型定義 - 型安全なAPIレスポンス
- */
-
 import type { Result } from "./result";
-
-// === APIエラー型 ===
 
 export const API_ERROR_CODES = {
   BAD_REQUEST: "BAD_REQUEST",
@@ -24,13 +18,9 @@ export interface ApiError {
   readonly details?: Record<string, unknown>;
 }
 
-// === APIレスポンス型 ===
-
 export type ApiResponse<T> = Result<T, ApiError>;
 
 export type ApiResult<T> = Promise<ApiResponse<T>>;
-
-// === ページネーション ===
 
 export interface PaginationParams {
   readonly page?: number;
@@ -47,8 +37,6 @@ export interface PaginatedData<T> {
 
 export type PaginatedResponse<T> = ApiResponse<PaginatedData<T>>;
 
-// === HTTPステータスコードマッピング ===
-
 export const ERROR_STATUS_MAP: Record<ApiErrorCode, number> = {
   BAD_REQUEST: 400,
   UNAUTHORIZED: 401,
@@ -58,8 +46,6 @@ export const ERROR_STATUS_MAP: Record<ApiErrorCode, number> = {
   VALIDATION_ERROR: 422,
   INTERNAL_ERROR: 500,
 } as const;
-
-// === エラー作成ヘルパー ===
 
 export function createApiError(
   code: ApiErrorCode,
