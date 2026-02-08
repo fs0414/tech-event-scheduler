@@ -1,13 +1,13 @@
 /**
- * 型安全なAPIクライアント
+ * Eden Treaty による型安全なAPIクライアント
  */
 
+import { treaty } from "@elysiajs/eden";
+import type { App } from "@tech-event-scheduler/api";
 import {
   type ApiResponse,
-  type EventResponse,
-  type CreateEventInput,
-  type UpdateEventInput,
   type ApiError,
+  type EventResponse,
   success,
   failure,
   isSuccess,
@@ -17,94 +17,96 @@ import {
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8787";
 
-// === HTTPクライアント ===
+// === Eden Treaty クライアント ===
 
-interface RequestOptions extends Omit<RequestInit, "body"> {
-  body?: unknown;
-}
+/**
+ * Eden Treaty クライアント
+ * Elysia APIから自動的に型が推論される
+ */
+export const edenClient = treaty<App>(API_BASE_URL, {
+  fetch: {
+    credentials: "include",
+  },
+});
 
-async function request<T>(
-  path: string,
-  options: RequestOptions = {}
-): Promise<ApiResponse<T>> {
-  const { body, headers: customHeaders, ...restOptions } = options;
+// === ヘルパー関数 ===
 
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
-    ...customHeaders,
-  };
-
-  try {
-    const response = await fetch(`${API_BASE_URL}${path}`, {
-      ...restOptions,
-      headers,
-      body: body ? JSON.stringify(body) : undefined,
-      credentials: "include",
-    });
-
-    const data: unknown = await response.json();
-
-    // APIがResult型で返す場合
-    if (
-      typeof data === "object" &&
-      data !== null &&
-      "success" in data &&
-      typeof (data as { success: unknown }).success === "boolean"
-    ) {
-      return data as ApiResponse<T>;
-    }
-
-    // 直接データが返ってくる場合（レガシー対応）
-    if (response.ok) {
-      return success(data as T);
-    }
-
-    // エラーレスポンス
-    const errorData = data as { message?: string; details?: unknown } | null;
+/**
+ * Eden レスポンスを ApiResponse 型に変換
+ * APIはすでにResult型（Success/Failure）を返すため、それをそのまま透過的に処理
+ */
+function toApiResponse<T>(result: {
+  data: unknown;
+  error: { value: unknown } | null;
+}): ApiResponse<T> {
+  // Edenのエラー（ネットワークエラー等）
+  if (result.error) {
+    const errorValue = result.error.value as { message?: string } | undefined;
     const apiError: ApiError = {
       code: "INTERNAL_ERROR",
-      message: errorData?.message ?? "リクエストに失敗しました",
-      details:
-        typeof errorData?.details === "object" && errorData.details !== null
-          ? (errorData.details as Record<string, unknown>)
-          : undefined,
-    };
-    return failure(apiError);
-  } catch (error) {
-    const apiError: ApiError = {
-      code: "INTERNAL_ERROR",
-      message:
-        error instanceof Error ? error.message : "ネットワークエラーが発生しました",
+      message: errorValue?.message ?? "リクエストに失敗しました",
     };
     return failure(apiError);
   }
+
+  // データがない場合
+  if (result.data === null || result.data === undefined) {
+    return failure({
+      code: "INTERNAL_ERROR",
+      message: "レスポンスデータがありません",
+    });
+  }
+
+  // APIがResult型（success/failure）で返す場合、そのまま返す
+  const data = result.data;
+  if (
+    typeof data === "object" &&
+    data !== null &&
+    "success" in data &&
+    typeof (data as { success: unknown }).success === "boolean"
+  ) {
+    // success.dataの中身がTになるように型変換
+    const resultData = data as { success: boolean; data?: unknown; error?: unknown };
+    if (resultData.success && "data" in resultData) {
+      return success(resultData.data as T);
+    }
+    if (!resultData.success && "error" in resultData) {
+      return failure(resultData.error as ApiError);
+    }
+  }
+
+  // 直接データが返ってくる場合（レガシー対応）
+  return success(result.data as T);
 }
 
-// === イベントAPI ===
+// === イベントAPI（Eden Treaty経由） ===
 
 export const eventsApi = {
   /**
    * イベント一覧を取得
    */
   async list(): Promise<ApiResponse<readonly EventResponse[]>> {
-    return request<readonly EventResponse[]>("/api/events");
+    const result = await edenClient.api.events.get();
+    return toApiResponse<readonly EventResponse[]>(result);
   },
 
   /**
    * イベント詳細を取得
    */
   async get(id: string): Promise<ApiResponse<EventResponse>> {
-    return request<EventResponse>(`/api/events/${id}`);
+    const result = await edenClient.api.events({ id }).get();
+    return toApiResponse<EventResponse>(result);
   },
 
   /**
    * イベントを作成
    */
-  async create(input: CreateEventInput): Promise<ApiResponse<EventResponse>> {
-    return request<EventResponse>("/api/events", {
-      method: "POST",
-      body: input,
-    });
+  async create(input: {
+    title: string;
+    eventUrl?: string;
+  }): Promise<ApiResponse<EventResponse>> {
+    const result = await edenClient.api.events.post(input);
+    return toApiResponse<EventResponse>(result);
   },
 
   /**
@@ -112,25 +114,41 @@ export const eventsApi = {
    */
   async update(
     id: string,
-    input: UpdateEventInput
+    input: { title?: string; eventUrl?: string | null; attendance?: number }
   ): Promise<ApiResponse<EventResponse>> {
-    return request<EventResponse>(`/api/events/${id}`, {
-      method: "PATCH",
-      body: input,
-    });
+    const result = await edenClient.api.events({ id }).patch(input);
+    return toApiResponse<EventResponse>(result);
   },
 
   /**
    * イベントを削除
    */
   async delete(id: string): Promise<ApiResponse<{ deleted: true }>> {
-    return request<{ deleted: true }>(`/api/events/${id}`, {
-      method: "DELETE",
-    });
+    const result = await edenClient.api.events({ id }).delete();
+    return toApiResponse<{ deleted: true }>(result);
   },
 } as const;
 
-// === 認証API ===
+// === ヘルスチェックAPI（Eden Treaty経由） ===
+
+export interface HealthStatus {
+  status: "ok" | "degraded" | "error";
+  timestamp: string;
+  version?: string;
+}
+
+export const healthApi = {
+  /**
+   * ヘルスチェック
+   */
+  async check(): Promise<ApiResponse<HealthStatus>> {
+    const result = await edenClient.health.get();
+    return toApiResponse<HealthStatus>(result);
+  },
+} as const;
+
+// === 認証API（Better Auth - 手動実装） ===
+// Better Auth は .all() で定義されているため Eden Treaty で型推論できない
 
 export interface LoginInput {
   email: string;
@@ -159,14 +177,48 @@ export interface AuthSession {
   };
 }
 
+async function authRequest<T>(
+  path: string,
+  options: RequestInit = {}
+): Promise<ApiResponse<T>> {
+  try {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+      credentials: "include",
+    });
+
+    const data: unknown = await response.json();
+
+    if (response.ok) {
+      return success(data as T);
+    }
+
+    const errorData = data as { message?: string } | null;
+    return failure({
+      code: "INTERNAL_ERROR",
+      message: errorData?.message ?? "認証リクエストに失敗しました",
+    });
+  } catch (error) {
+    return failure({
+      code: "INTERNAL_ERROR",
+      message:
+        error instanceof Error ? error.message : "ネットワークエラーが発生しました",
+    });
+  }
+}
+
 export const authApi = {
   /**
    * ログイン
    */
   async login(input: LoginInput): Promise<ApiResponse<AuthSession>> {
-    return request<AuthSession>("/api/auth/sign-in/email", {
+    return authRequest<AuthSession>("/api/auth/sign-in/email", {
       method: "POST",
-      body: input,
+      body: JSON.stringify(input),
     });
   },
 
@@ -174,9 +226,9 @@ export const authApi = {
    * 新規登録
    */
   async register(input: RegisterInput): Promise<ApiResponse<AuthSession>> {
-    return request<AuthSession>("/api/auth/sign-up/email", {
+    return authRequest<AuthSession>("/api/auth/sign-up/email", {
       method: "POST",
-      body: input,
+      body: JSON.stringify(input),
     });
   },
 
@@ -184,7 +236,7 @@ export const authApi = {
    * ログアウト
    */
   async logout(): Promise<ApiResponse<{ success: true }>> {
-    return request<{ success: true }>("/api/auth/sign-out", {
+    return authRequest<{ success: true }>("/api/auth/sign-out", {
       method: "POST",
     });
   },
@@ -193,24 +245,7 @@ export const authApi = {
    * 現在のセッションを取得
    */
   async getSession(): Promise<ApiResponse<AuthSession | null>> {
-    return request<AuthSession | null>("/api/auth/get-session");
-  },
-} as const;
-
-// === ヘルスチェックAPI ===
-
-export interface HealthStatus {
-  status: "ok" | "degraded" | "error";
-  timestamp: string;
-  version?: string;
-}
-
-export const healthApi = {
-  /**
-   * ヘルスチェック
-   */
-  async check(): Promise<ApiResponse<HealthStatus>> {
-    return request<HealthStatus>("/health");
+    return authRequest<AuthSession | null>("/api/auth/get-session");
   },
 } as const;
 

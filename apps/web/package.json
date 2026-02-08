@@ -16,6 +16,7 @@
     "cf-typegen": "wrangler types"
   },
   "dependencies": {
+    "@elysiajs/eden": "^1.4.6",
     "@tanstack/react-router": "^1.158.4",
     "@tanstack/react-start": "^1.159.0",
     "@tech-event-scheduler/shared": "workspace:*",
@@ -29,6 +30,7 @@
     "@cloudflare/workers-types": "^4.20250204.0",
     "@tailwindcss/vite": "^4.1.0",
     "@tanstack/router-cli": "^1.158.4",
+    "@tech-event-scheduler/api": "workspace:*",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.6.0",

@@ -1,88 +1,69 @@
-/**
- * Owner Repository 実装
- */
-
 import { eq, and } from "drizzle-orm";
-import type { DatabaseAdapter } from "../adapters/types";
 import { owner } from "../schema";
-import type { Owner, NewOwner, UpdateOwner } from "../schema";
-import type { OwnerRepository } from "./types";
+import type { Owner, NewOwner, UpdateOwner, User } from "../schema";
+import type { Database } from "./common";
+
+export interface OwnerWithUser extends Owner {
+  readonly user: User;
+}
+
+export interface OwnerRepository {
+  findById(id: number): Promise<Owner | undefined>;
+  findByEventId(eventId: number): Promise<readonly Owner[]>;
+  findByUserId(userId: string): Promise<readonly Owner[]>;
+  findByEventAndUser(eventId: number, userId: string): Promise<Owner | undefined>;
+  create(data: NewOwner): Promise<Owner>;
+  update(id: number, data: UpdateOwner): Promise<Owner | undefined>;
+  delete(id: number): Promise<boolean>;
+  deleteByEventId(eventId: number): Promise<number>;
+}
 
 export class DrizzleOwnerRepository implements OwnerRepository {
-  constructor(private readonly adapter: DatabaseAdapter) {}
+  constructor(private readonly db: Database) {}
 
   async findById(id: number): Promise<Owner | undefined> {
-    return this.adapter.select(owner).where(eq(owner.id, id)).get();
+    return this.db.select().from(owner).where(eq(owner.id, id)).get();
   }
 
   async findByEventId(eventId: number): Promise<readonly Owner[]> {
-    return this.adapter
-      .select(owner)
-      .where(eq(owner.eventId, eventId))
-      .all();
+    return this.db.select().from(owner).where(eq(owner.eventId, eventId)).all();
   }
 
   async findByUserId(userId: string): Promise<readonly Owner[]> {
-    return this.adapter
-      .select(owner)
-      .where(eq(owner.userId, userId))
-      .all();
+    return this.db.select().from(owner).where(eq(owner.userId, userId)).all();
   }
 
-  async findByEventAndUser(
-    eventId: number,
-    userId: string
-  ): Promise<Owner | undefined> {
-    return this.adapter
-      .select(owner)
+  async findByEventAndUser(eventId: number, userId: string): Promise<Owner | undefined> {
+    return this.db
+      .select()
+      .from(owner)
       .where(and(eq(owner.eventId, eventId), eq(owner.userId, userId)))
       .get();
   }
 
   async create(data: NewOwner): Promise<Owner> {
-    const result = await this.adapter.insert(owner, data);
-    const insertedId = Number(result.lastInsertRowid);
-    const created = await this.findById(insertedId);
-    if (!created) {
-      throw new Error("Failed to create owner");
-    }
-    return created;
+    return this.db.insert(owner).values(data).returning().get();
   }
 
   async update(id: number, data: UpdateOwner): Promise<Owner | undefined> {
-    const existing = await this.findById(id);
-    if (!existing) {
-      return undefined;
-    }
-
-    await this.adapter.update(owner, data, eq(owner.id, id));
-    return this.findById(id);
+    return this.db.update(owner).set(data).where(eq(owner.id, id)).returning().get();
   }
 
   async delete(id: number): Promise<boolean> {
-    const existing = await this.findById(id);
-    if (!existing) {
-      return false;
-    }
-
-    await this.adapter.delete(owner, eq(owner.id, id));
-    return true;
+    const result = await this.db.delete(owner).where(eq(owner.id, id)).returning().get();
+    return result !== undefined;
   }
 
   async deleteByEventId(eventId: number): Promise<number> {
-    const owners = await this.findByEventId(eventId);
-    const count = owners.length;
-
-    if (count > 0) {
-      await this.adapter.delete(owner, eq(owner.eventId, eventId));
-    }
-
-    return count;
+    const result = await this.db
+      .delete(owner)
+      .where(eq(owner.eventId, eventId))
+      .returning()
+      .all();
+    return result.length;
   }
 }
 
-export function createOwnerRepository(
-  adapter: DatabaseAdapter
-): OwnerRepository {
-  return new DrizzleOwnerRepository(adapter);
+export function createOwnerRepository(db: Database): OwnerRepository {
+  return new DrizzleOwnerRepository(db);
 }

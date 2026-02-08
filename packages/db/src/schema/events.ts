@@ -7,16 +7,12 @@ import {
 import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
 import { user } from "./auth";
 
-// === オーナーロール定義 ===
-
 export const OWNER_ROLES = {
   ADMIN: 10,
   MEMBER: 20,
 } as const;
 
 export type OwnerRole = (typeof OWNER_ROLES)[keyof typeof OWNER_ROLES];
-
-// === イベントテーブル ===
 
 export const event = sqliteTable("event", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -32,8 +28,6 @@ export type NewEvent = InferInsertModel<typeof event>;
 export type UpdateEvent = Partial<Omit<NewEvent, "id" | "createdAt">> & {
   updatedAt: Date;
 };
-
-// === オーナーテーブル ===
 
 export const owner = sqliteTable(
   "owner",
@@ -59,8 +53,6 @@ export type UpdateOwner = {
   updatedAt: Date;
 };
 
-// === 記事テーブル ===
-
 export const article = sqliteTable("article", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   title: text("title").notNull(),
@@ -75,8 +67,6 @@ export type NewArticle = InferInsertModel<typeof article>;
 export type UpdateArticle = Partial<Omit<NewArticle, "id" | "createdAt">> & {
   updatedAt: Date;
 };
-
-// === スピーカーテーブル ===
 
 export const speaker = sqliteTable(
   "speaker",
@@ -103,8 +93,6 @@ export type UpdateSpeaker = Partial<
 > & {
   updatedAt: Date;
 };
-
-// === タイマーテーブル ===
 
 export const timer = sqliteTable(
   "timer",

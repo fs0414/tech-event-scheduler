@@ -1,8 +1,6 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import type { InferSelectModel, InferInsertModel } from "drizzle-orm";
 
-// === ユーザーテーブル ===
-
 export const user = sqliteTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
@@ -15,8 +13,6 @@ export const user = sqliteTable("user", {
 
 export type User = InferSelectModel<typeof user>;
 export type NewUser = InferInsertModel<typeof user>;
-
-// === セッションテーブル ===
 
 export const session = sqliteTable("session", {
   id: text("id").primaryKey(),
@@ -33,8 +29,6 @@ export const session = sqliteTable("session", {
 
 export type Session = InferSelectModel<typeof session>;
 export type NewSession = InferInsertModel<typeof session>;
-
-// === アカウントテーブル ===
 
 export const account = sqliteTable("account", {
   id: text("id").primaryKey(),
@@ -60,8 +54,6 @@ export const account = sqliteTable("account", {
 
 export type Account = InferSelectModel<typeof account>;
 export type NewAccount = InferInsertModel<typeof account>;
-
-// === 認証確認テーブル ===
 
 export const verification = sqliteTable("verification", {
   id: text("id").primaryKey(),

@@ -1,8 +1,3 @@
-/**
- * DBスキーマ - Drizzle ORMテーブル定義とInfer型
- */
-
-// 認証関連
 export {
   user,
   session,
@@ -18,17 +13,13 @@ export {
   type NewVerification,
 } from "./auth";
 
-// イベント関連
 export {
-  // テーブル
   event,
   owner,
   article,
   speaker,
   timer,
-  // 定数
   OWNER_ROLES,
-  // 型
   type OwnerRole,
   type Event,
   type NewEvent,
