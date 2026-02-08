@@ -14,8 +14,8 @@ database_id = "5e99bb69-708e-4574-a25f-8ce2bada6883"
 
 # 環境変数
 [vars]
-CORS_ORIGIN = "https://tech-event-scheduler-web.workers.dev"
-BETTER_AUTH_URL = "https://tech-event-scheduler-api.workers.dev"
+CORS_ORIGIN = "https://tech-event-scheduler-web.fujitanisora0414.workers.dev"
+BETTER_AUTH_URL = "https://tech-event-scheduler-api.fujitanisora0414.workers.dev"
 
 # シークレット（wrangler secret putで設定）
 # - BETTER_AUTH_SECRET
