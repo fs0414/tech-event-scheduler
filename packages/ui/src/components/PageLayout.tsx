@@ -56,10 +56,11 @@ export const PageLayout: FC<PageLayoutProps> = ({
   centerContent = false,
 }) => {
   return (
-    <Box minH="100vh" bg="gray.50" _dark={{ bg: "gray.900" }}>
+    <Box minH="100vh" bg="#f8fcfd" _dark={{ bg: "gray.900" }}>
       <Container
         maxW={maxW}
-        py={py}
+        py={{ base: 4, md: py }}
+        px={{ base: 4, md: 6 }}
         {...(centerContent && {
           display: "flex",
           flexDirection: "column",

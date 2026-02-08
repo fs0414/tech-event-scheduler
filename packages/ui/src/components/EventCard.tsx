@@ -133,7 +133,7 @@ export const EventCard: FC<EventCardProps> = ({
           {description}
         </Text>
         <HStack gap={2} flexWrap="wrap">
-          <Tag colorScheme="blue">{formatDateRangeJST(startDate, endDate)}</Tag>
+          <Tag colorScheme="cyan">{formatDateRangeJST(startDate, endDate)}</Tag>
           {location && <Tag colorScheme="green">{location}</Tag>}
           {url && (
             <Tag
@@ -155,7 +155,7 @@ export const EventCard: FC<EventCardProps> = ({
           <HStack gap={2}>
             {onViewDetails && (
               <Button
-                colorScheme="brand"
+                colorScheme="cyan"
                 variant="outline"
                 size={compact ? "sm" : "md"}
                 onClick={onViewDetails}
