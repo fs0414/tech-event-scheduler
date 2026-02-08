@@ -299,7 +299,7 @@ export const authApi = {
       }),
     });
 
-    const data = await response.json();
+    const data = (await response.json()) as { url?: string };
     if (data.url) {
       window.location.href = data.url;
     }

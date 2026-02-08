@@ -7,10 +7,6 @@ export function createAuth(env: Env) {
   const db = createDatabase(env);
 
   const hasGoogleCredentials = !!(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET);
-  console.log("[Auth] Google OAuth configured:", hasGoogleCredentials);
-  if (hasGoogleCredentials) {
-    console.log("[Auth] Google Client ID:", env.GOOGLE_CLIENT_ID?.slice(0, 20) + "...");
-  }
 
   return betterAuth({
     database: drizzleAdapter(db, {
