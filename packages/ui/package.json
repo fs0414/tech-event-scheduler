@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@tech-event-scheduler/shared": "workspace:*",
+    "@yamada-ui/lucide": "^1.7.2",
     "@yamada-ui/react": "^1.7.2"
   },
   "peerDependencies": {

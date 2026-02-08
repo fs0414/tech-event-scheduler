@@ -1,10 +1,26 @@
+import { useEffect } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { Box, Heading, Text, VStack, Card, CardBody } from "@yamada-ui/react";
 import { PageLayout } from "@tech-event-scheduler/ui";
+import { authApi } from "~/lib/api-client";
+import { isSuccess } from "@tech-event-scheduler/shared";
 import { GoogleSignInButton } from "./GoogleSignInButton";
 import { BrandLogo } from "./BrandLogo";
 import { FeatureList } from "./FeatureList";
 
 export function SignInPage() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const result = await authApi.getSession();
+      if (isSuccess(result) && result.data) {
+        navigate({ to: "/" });
+      }
+    };
+    checkSession();
+  }, [navigate]);
+
   return (
     <PageLayout centerContent>
       <Box

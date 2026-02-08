@@ -1,6 +1,5 @@
 import { useCallback } from "react";
-import { VStack, Divider } from "@yamada-ui/react";
-import { PageLayout } from "@tech-event-scheduler/ui";
+import { VStack, Divider, Container } from "@yamada-ui/react";
 import { useEvents } from "~/hooks";
 import { PageHeader } from "./PageHeader";
 import { EventListSection } from "./EventListSection";
@@ -13,7 +12,7 @@ export function HomePage() {
   }, []);
 
   return (
-    <PageLayout>
+    <Container maxW="6xl" py={{ base: 4, md: 8 }} px={{ base: 4, md: 6 }}>
       <VStack gap={{ base: 4, md: 6 }} align="stretch">
         <PageHeader onCreateEvent={handleCreateEvent} />
         <Divider />
@@ -24,6 +23,6 @@ export function HomePage() {
           onRefresh={refetch}
         />
       </VStack>
-    </PageLayout>
+    </Container>
   );
 }

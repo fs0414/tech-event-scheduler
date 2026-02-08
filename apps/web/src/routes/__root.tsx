@@ -1,5 +1,5 @@
 import {
-  createRootRoute,
+  createRootRouteWithContext,
   Outlet,
   ScrollRestoration,
   HeadContent,
@@ -7,9 +7,19 @@ import {
 } from "@tanstack/react-router";
 import { UIProvider } from "@yamada-ui/react";
 import { theme } from "@tech-event-scheduler/ui";
+import { getSessionServer } from "~/lib";
+import type { RouterContext } from "~/router";
 import "~/styles/app.css";
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<RouterContext>()({
+  beforeLoad: async () => {
+    try {
+      const session = await getSessionServer();
+      return { session };
+    } catch {
+      return { session: null };
+    }
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
