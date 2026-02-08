@@ -21,6 +21,7 @@
     "@tanstack/react-start": "^1.159.0",
     "@tech-event-scheduler/shared": "workspace:*",
     "@tech-event-scheduler/ui": "workspace:*",
+    "@yamada-ui/lucide": "^1.10.5",
     "@yamada-ui/react": "^1.7.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
