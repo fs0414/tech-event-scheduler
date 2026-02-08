@@ -5,6 +5,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { UIProvider } from "@yamada-ui/react";
 import { theme } from "@tech-event-scheduler/ui";
 import { getSessionServer } from "~/lib";
@@ -32,15 +33,19 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 });
 
 function RootComponent() {
+  const { queryClient } = Route.useRouteContext();
+
   return (
     <html lang="ja">
       <head>
         <HeadContent />
       </head>
       <body>
-        <UIProvider theme={theme}>
-          <Outlet />
-        </UIProvider>
+        <QueryClientProvider client={queryClient}>
+          <UIProvider theme={theme}>
+            <Outlet />
+          </UIProvider>
+        </QueryClientProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

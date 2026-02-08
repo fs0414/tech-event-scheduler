@@ -1,12 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
-import { isSuccess, toISO8601, type EventResponse } from "@tech-event-scheduler/shared";
-import { api } from "~/lib/api-client";
-
-interface EventsState {
-  readonly data: readonly EventResponse[];
-  readonly loading: boolean;
-  readonly error: string | null;
-}
+import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
+import { toISO8601, type EventResponse } from "@tech-event-scheduler/shared";
+import { eventsQueryOptions } from "~/lib/queries";
 
 const DEMO_EVENTS: readonly EventResponse[] = [
   {
@@ -36,42 +30,17 @@ const DEMO_EVENTS: readonly EventResponse[] = [
 ];
 
 export function useEvents() {
-  const [state, setState] = useState<EventsState>({
-    data: [],
-    loading: true,
-    error: null,
-  });
+  const queryClient = useQueryClient();
+  const { data } = useSuspenseQuery(eventsQueryOptions());
 
-  const fetchEvents = useCallback(async () => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
+  const events = data.length > 0 ? data : DEMO_EVENTS;
 
-    const response = await api.events.list();
-
-    if (isSuccess(response)) {
-      setState({
-        data: response.data,
-        loading: false,
-        error: null,
-      });
-    } else {
-      setState({
-        data: [],
-        loading: false,
-        error: response.error.message,
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    void fetchEvents();
-  }, [fetchEvents]);
-
-  const events = state.data.length > 0 ? state.data : DEMO_EVENTS;
+  const refetch = () => {
+    queryClient.invalidateQueries({ queryKey: ["events"] });
+  };
 
   return {
     events,
-    loading: state.loading,
-    error: state.error,
-    refetch: fetchEvents,
+    refetch,
   };
 }
