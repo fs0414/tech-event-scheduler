@@ -87,6 +87,8 @@ jobs:
 
       - name: Build Web
         working-directory: apps/web
+        env:
+          VITE_API_URL: https://tech-event-scheduler-api.workers.dev
         run: bun run build
 
       - name: Deploy Web to Cloudflare Workers
