@@ -1,12 +1,13 @@
 import { useCallback } from "react";
 import {
-  Heading,
+  Text,
   VStack,
   HStack,
   Button,
   Alert,
   AlertIcon,
   AlertDescription,
+  SimpleGrid,
 } from "@yamada-ui/react";
 import type { EventResponse } from "@tech-event-scheduler/shared";
 import { SimpleEventCard } from "./SimpleEventCard";
@@ -41,19 +42,25 @@ export function EventListSection({
       )}
 
       <HStack justify="space-between" align="center">
-        <Heading size={{ base: "md", md: "lg" }}>注目のイベント</Heading>
+        <Text fontSize="sm" color="gray.600">
+          {loading ? "読み込み中..." : `全 ${events.length} 件`}
+        </Text>
         <Button
           variant="ghost"
-          size={{ base: "xs", md: "sm" }}
+          size="xs"
           onClick={onRefresh}
+          isLoading={loading}
         >
-          更新
+          ↻ 更新
         </Button>
       </HStack>
 
-      <VStack gap={4} align="stretch">
+      <SimpleGrid minChildWidth="280px" gap={{ base: 3, md: 4 }}>
         {loading ? (
           <>
+            <EventCardSkeleton />
+            <EventCardSkeleton />
+            <EventCardSkeleton />
             <EventCardSkeleton />
             <EventCardSkeleton />
             <EventCardSkeleton />
@@ -67,7 +74,7 @@ export function EventListSection({
             />
           ))
         )}
-      </VStack>
+      </SimpleGrid>
     </VStack>
   );
 }

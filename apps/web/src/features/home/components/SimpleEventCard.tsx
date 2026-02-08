@@ -1,10 +1,10 @@
 import {
   Card,
   CardBody,
-  CardHeader,
   Heading,
   Text,
   VStack,
+  HStack,
   Badge,
   Button,
 } from "@yamada-ui/react";
@@ -15,29 +15,39 @@ interface SimpleEventCardProps {
   readonly onViewDetails: () => void;
 }
 
-export function SimpleEventCard({ event, onViewDetails }: SimpleEventCardProps) {
+export function SimpleEventCard({
+  event,
+  onViewDetails,
+}: SimpleEventCardProps) {
   return (
-    <Card>
-      <CardHeader py={{ base: 3, md: 4 }}>
-        <VStack align="stretch" gap={2}>
-          <Heading size={{ base: "sm", md: "md" }}>{event.title}</Heading>
-          <Badge colorScheme="primary" w="fit-content">
-            {event.attendance}人参加
-          </Badge>
-        </VStack>
-      </CardHeader>
-      <CardBody pt={0} pb={{ base: 3, md: 4 }}>
-        <VStack align="stretch" gap={3}>
-          {event.eventUrl && (
-            <Text fontSize={{ base: "xs", md: "sm" }} color="cyan.500" isTruncated>
-              {event.eventUrl}
+    <Card h="100%">
+      <CardBody p={{ base: 3, md: 4 }}>
+        <VStack align="stretch" gap={3} h="100%" justify="space-between">
+          <VStack align="stretch" gap={2}>
+            <HStack justify="space-between" align="flex-start" gap={2}>
+              <Heading
+                size="sm"
+                fontWeight="600"
+                lineClamp={2}
+                flex={1}
+              >
+                {event.title}
+              </Heading>
+              <Badge colorScheme="primary" flexShrink={0}>
+                {event.attendance}人
+              </Badge>
+            </HStack>
+            {event.eventUrl && (
+              <Text fontSize="xs" color="cyan.600" isTruncated>
+                {event.eventUrl}
+              </Text>
+            )}
+            <Text fontSize="xs" color="gray.500">
+              作成: {new Date(event.createdAt).toLocaleDateString("ja-JP")}
             </Text>
-          )}
-          <Text fontSize="xs" color="gray.500">
-            作成日: {new Date(event.createdAt).toLocaleDateString("ja-JP")}
-          </Text>
+          </VStack>
           <Button
-            size={{ base: "md", md: "sm" }}
+            size="sm"
             variant="outline"
             colorScheme="primary"
             onClick={onViewDetails}

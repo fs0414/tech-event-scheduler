@@ -18,6 +18,27 @@ const customTheme: UsageTheme = {
       primary: "cyan",
     },
   },
+  components: {
+    Card: {
+      baseStyle: {
+        container: {
+          borderWidth: "1px",
+          borderColor: "gray.200",
+          transition: "all 0.2s",
+          _hover: {
+            borderColor: "cyan.400",
+            shadow: "sm",
+          },
+          _dark: {
+            borderColor: "gray.700",
+            _hover: {
+              borderColor: "cyan.400",
+            },
+          },
+        },
+      },
+    },
+  },
 };
 
 export const theme = extendTheme(customTheme)();
