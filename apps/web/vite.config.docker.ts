@@ -12,6 +12,13 @@ export default defineConfig({
   server: {
     port: 3040,
     host: "0.0.0.0",
+    watch: {
+      usePolling: true,
+    },
+    hmr: {
+      host: "localhost",
+      port: 3040,
+    },
   },
   plugins: [
     tailwindcss(),
